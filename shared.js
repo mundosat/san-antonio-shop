@@ -150,6 +150,25 @@ function paymentStatusLabel(status='pendiente'){ return String(status).replace(/
 function orderStatusLabel(status='pendiente'){ return String(status).replace(/_/g,' '); }
 function averageRating(items=[]){ if (!items.length) return 0; return items.reduce((a,b)=>a+asNumber(b.rating,0),0)/items.length; }
 
+function orderProgressPercent(status='pendiente'){
+  const map = {pendiente: 20, aceptado: 45, en_camino: 75, entregado: 100, cancelado: 100};
+  return map[String(status)] ?? 20;
+}
+function orderTimelineLabel(status='pendiente'){
+  const labels = {
+    pendiente: 'Esperando repartidor',
+    aceptado: 'Pedido aceptado',
+    en_camino: 'En camino',
+    entregado: 'Entregado',
+    cancelado: 'Cancelado'
+  };
+  return labels[String(status)] || 'Pendiente';
+}
+function courierWhatsAppLink(phone, text){
+  const cleaned = cleanPhone(phone);
+  return cleaned ? `https://wa.me/${cleaned}?text=${encodeURIComponent(text || '')}` : '';
+}
+
 function haversineKm(lat1, lng1, lat2, lng2){
   const toRad = d => d * Math.PI / 180;
   const R = 6371;

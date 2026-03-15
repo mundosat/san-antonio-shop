@@ -1,64 +1,67 @@
-SAN ANTONIO SHOP ECUADOR V5
-===========================
+SAN ANTONIO SHOP ECUADOR PRO
+============================
 
-Esta versión incluye:
-- clientes con pedidos persistentes
-- panel de repartidores aprobado manualmente
-- tracking básico en vivo del repartidor
-- ruta automática gratis con Leaflet + OSRM
-- costo estimado de envío automático
-- métodos de pago: efectivo, contra entrega, tarjeta y transferencia
-- calificación de repartidores
-- panel administrador con solicitudes, pedidos, pagos y métricas
-- autoborrado con historial:
-  * pendiente > 3 horas
-  * entregado > 30 minutos
-  * cancelado > 30 minutos
+Esta versión viene lista para GitHub Pages y Firebase.
 
-ARCHIVOS PRINCIPALES
-- index.html ........ cliente
-- repartidor.html ... repartidor
-- admin.html ........ administrador
-- shared.js ......... configuración y funciones comunes
+Incluye:
+- Clientes con pedidos y cálculo automático de envío
+- Repartidores con ubicación en vivo y ruta en mapa
+- Panel administrador
+- Seguimiento tipo Uber Eats
+- Calificación de repartidores
+- App instalable (PWA)
+- Caché offline básico
 
-CONFIGURACIÓN NECESARIA
-1) Firebase Authentication habilitado
-2) Firestore Database habilitado
-3) Firebase Storage habilitado (para documentos y comprobantes)
-4) En usuarios/<tu_uid> agrega:
-   isAdmin: true
+ANTES DE SUBIR A GITHUB
+-----------------------
+1) Haz respaldo de tu repositorio actual.
+2) Reemplaza los archivos del repositorio por esta versión.
+3) Sube los cambios a GitHub.
+4) En Firebase publica también las reglas nuevas.
 
-COLECCIONES USADAS
-- usuarios
-- pedidos
-- repartidores
-- calificaciones
-- historial_pedidos
+ARCHIVOS IMPORTANTES
+--------------------
+- index.html
+- repartidor.html
+- admin.html
+- shared.js
+- styles.css
+- manifest.json
+- service-worker.js
+- firestore.rules
+- storage.rules
+- icons/
 
-REGLAS / ÍNDICES
-Puede que Firestore te pida crear índices al usar:
-- pedidos where clienteId + orderBy createdAt
-- pedidos orderBy createdAt
+PASOS EN GITHUB (WEB)
+---------------------
+1) Entra al repositorio.
+2) Pulsa Add file > Upload files.
+3) Sube todos los archivos extraídos de este ZIP.
+4) Confirma con un commit, por ejemplo:
+   update san antonio shop pro
 
-Si Firestore muestra un enlace para crear el índice, solo ábrelo y confirma.
+PASOS EN FIREBASE
+-----------------
+Publica las reglas nuevas desde consola o CLI:
+- firestore.rules
+- storage.rules
 
-NOTAS IMPORTANTES
-- El cálculo del costo está listo y funcional como estimado local. La distancia inicial usa la ubicación del cliente y una estimación segura para no romper el flujo.
-- La ruta en el mapa sí se dibuja en tiempo real cuando un repartidor ya tomó el pedido.
-- El autoborrado se ejecuta cuando entra alguien a la app. Si quieres borrado 100% automático aunque nadie abra la app, luego conviene usar una Cloud Function programada.
-- Para pagos con tarjeta dejé la estructura lista. La pasarela real se conecta después.
+SI YA TIENES USUARIOS REGISTRADOS
+---------------------------------
+No se borran por subir estos archivos. Los usuarios están en Firebase Auth.
+Tampoco se borran tus pedidos o repartidores por reemplazar el front-end.
 
-PUBLICAR
-Puedes usar localhost, GitHub Pages o hosting HTTPS.
-En Firebase Authentication agrega como dominio autorizado:
-- mundosat.github.io
-(o tu dominio final)
+PARA EL ADMIN
+-------------
+El usuario administrador debe tener en Firestore:
+usuarios/TU_UID -> isAdmin: true
 
+NOTA IMPORTANTE
+---------------
+Las notificaciones de esta versión son del navegador (Web Notifications).
+Para push real en segundo plano con Firebase Cloud Messaging faltaría configurar:
+- VAPID key
+- firebase-messaging-sw.js
+- token por usuario
 
-
-V6 agrega:
-- ETA estimado para cliente
-- costo usando repartidor activo más cercano cuando exista
-- mapa operativo en vivo en admin
-- archivos firestore.rules y storage.rules listos para copiar
-- soporte para historial y tracking mejorado
+Esta base ya quedó preparada para seguir creciendo sin romper la versión anterior.
