@@ -1,0 +1,36 @@
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function isOwner(uid) { return signedIn() && request.auth.uid == uid; }
+    function isAdmin() {
+      return signedIn() && get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.isAdmin == true;
+    }
+    match /usuarios/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow create: if isOwner(uid);
+      allow update: if isOwner(uid) || isAdmin();
+      allow delete: if isAdmin();
+    }
+    match /pedidos/{pedidoId} {
+      allow create: if signedIn();
+      allow read: if isAdmin() || (signedIn() && (resource.data.clienteId == request.auth.uid || resource.data.repartidorId == request.auth.uid));
+      allow update: if isAdmin() || (signedIn() && (resource.data.clienteId == request.auth.uid || resource.data.repartidorId == request.auth.uid));
+      allow delete: if isAdmin();
+    }
+    match /repartidores/{uid} {
+      allow read: if signedIn();
+      allow write: if isOwner(uid) || isAdmin();
+    }
+    match /calificaciones/{id} {
+      allow read: if signedIn();
+      allow create: if signedIn();
+      allow update, delete: if isAdmin();
+    }
+    match /historial_pedidos/{id} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+  }
+}

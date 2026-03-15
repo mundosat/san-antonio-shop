@@ -12,6 +12,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <title>San Antonio Shop | Admin V5</title>
 </head>
 <body>
@@ -60,6 +61,14 @@
           <div class="section-card p-3 p-lg-4 mb-4">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3"><h4 class="fw-bold mb-0">Solicitudes de repartidores</h4><button class="btn btn-soft btn-sm" onclick="loadRequests()">Actualizar</button></div>
             <div id="requestList"></div>
+          </div>
+          <div class="section-card p-3 p-lg-4 mb-4">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3"><h4 class="fw-bold mb-0">Mapa operativo en vivo</h4><button class="btn btn-soft btn-sm" onclick="loadOpsMap()">Actualizar mapa</button></div>
+            <div class="small-grid mb-3">
+              <div class="mini-data"><b>Repartidores activos:</b> <span id="opsCouriers">0</span></div>
+              <div class="mini-data"><b>Pedidos visibles:</b> <span id="opsOrders">0</span></div>
+            </div>
+            <div id="opsMap" class="map-box"></div>
           </div>
           <div class="section-card p-3 p-lg-4">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3"><h4 class="fw-bold mb-0">Accesos rápidos</h4><button class="btn btn-outline-success btn-sm" onclick="logoutUser()">Cerrar sesión</button></div>
@@ -146,7 +155,30 @@
       $('ratingsList').innerHTML = pieces.join('');
     }
     async function runCleanup(showToast=false){ try{ const deleted = await deleteExpiredOrders(120); if (showToast) showMessage(`Se eliminaron ${deleted} pedidos vencidos.`); loadStats(); loadOrders(); } catch(err){ showMessage('No se pudo limpiar: ' + err.message, 'danger'); } }
-    auth.onAuthStateChanged(async user => { if (!user) { $('loginGate').style.display='block'; $('adminSection').style.display='none'; return; } const ok = await ensureAdmin(user); if (!ok) { $('loginGate').style.display='none'; $('adminSection').style.display='block'; $('adminSection').innerHTML='<div class="section-card p-4"><div class="alert alert-danger mb-0">Tu usuario no tiene permisos de administrador. En Firestore, agrega <code>isAdmin: true</code> al documento de tu usuario en <code>usuarios/&lt;tu_uid&gt;</code>.</div></div>'; return; } $('loginGate').style.display='none'; $('adminSection').style.display='block'; loadStats(); loadOrders(); loadRequests(); loadRatings(); if (cleanupTimer) clearInterval(cleanupTimer); cleanupTimer = scheduleCleanup(); });
+
+    let opsMap, opsOrdersLayer, opsCouriersLayer;
+    function initOpsMap(){
+      if (opsMap) return;
+      opsMap = L.map('opsMap').setView([-2.9,-79.0], 7);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19, attribution:'© OpenStreetMap'}).addTo(opsMap);
+      opsOrdersLayer = L.layerGroup().addTo(opsMap);
+      opsCouriersLayer = L.layerGroup().addTo(opsMap);
+    }
+    async function loadOpsMap(){
+      initOpsMap();
+      opsOrdersLayer.clearLayers(); opsCouriersLayer.clearLayers();
+      const [ordersSnap, couriersSnap] = await Promise.all([
+        db.collection('pedidos').orderBy('createdAt','desc').limit(80).get(),
+        db.collection('repartidores').limit(80).get()
+      ]);
+      let orderCount=0, courierCount=0; const points=[];
+      ordersSnap.forEach(doc=>{ const d=doc.data(); if(!d?.lat||!d?.lng) return; orderCount++; const m=L.marker([d.lat,d.lng]).bindPopup(`<b>Pedido</b><br>${safe(d.texto)}<br>${safe(d.estado)}`); opsOrdersLayer.addLayer(m); points.push([d.lat,d.lng]); });
+      couriersSnap.forEach(doc=>{ const d=doc.data(); if(!d?.lat||!d?.lng) return; courierCount++; const m=L.circleMarker([d.lat,d.lng],{radius:8,color:'#145ec9',fillColor:'#145ec9',fillOpacity:0.85}).bindPopup(`<b>${safe(d.email || d.uid || doc.id)}</b><br>${d.activo ? 'activo' : 'sin conexión'}`); opsCouriersLayer.addLayer(m); points.push([d.lat,d.lng]); });
+      $('opsCouriers').textContent = courierCount; $('opsOrders').textContent = orderCount;
+      if (points.length) opsMap.fitBounds(points,{padding:[30,30]});
+    }
+
+    auth.onAuthStateChanged(async user => { if (!user) { $('loginGate').style.display='block'; $('adminSection').style.display='none'; return; } const ok = await ensureAdmin(user); if (!ok) { $('loginGate').style.display='none'; $('adminSection').style.display='block'; $('adminSection').innerHTML='<div class="section-card p-4"><div class="alert alert-danger mb-0">Tu usuario no tiene permisos de administrador. En Firestore, agrega <code>isAdmin: true</code> al documento de tu usuario en <code>usuarios/&lt;tu_uid&gt;</code>.</div></div>'; return; } $('loginGate').style.display='none'; $('adminSection').style.display='block'; loadStats(); loadOrders(); loadRequests(); loadRatings(); loadOpsMap(); if (cleanupTimer) clearInterval(cleanupTimer); cleanupTimer = scheduleCleanup(); });
   </script>
 </body>
 </html>

@@ -54,3 +54,11 @@ En Firebase Authentication agrega como dominio autorizado:
 - mundosat.github.io
 (o tu dominio final)
 
+
+
+V6 agrega:
+- ETA estimado para cliente
+- costo usando repartidor activo más cercano cuando exista
+- mapa operativo en vivo en admin
+- archivos firestore.rules y storage.rules listos para copiar
+- soporte para historial y tracking mejorado

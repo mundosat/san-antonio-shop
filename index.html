@@ -14,15 +14,15 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
-  <title>San Antonio Shop Ecuador V5</title>
-  <meta name="description" content="Mandados y entregas para todo Ecuador con tracking, costo automático y panel profesional." />
+  <title>San Antonio Shop Ecuador V6</title>
+  <meta name="description" content="Mandados y entregas para todo Ecuador con tracking en vivo, ETA y panel profesional." />
 </head>
 <body>
   <div class="container py-4 py-lg-5">
     <div class="brand-badge mb-4">
       <img src="icons/icon-192.png" alt="Logo" />
       <div>
-        <div class="fw-bold">San Antonio Shop V5</div>
+        <div class="fw-bold">San Antonio Shop V6</div>
         <div class="small-muted">Mandados, comida, compras y cualquier encargo en Ecuador</div>
       </div>
     </div>
@@ -137,6 +137,7 @@
               <div class="small-grid">
                 <div><div class="small-muted">Distancia estimada</div><div class="fw-bold" id="distanciaEstimada">0 km</div></div>
                 <div><div class="small-muted">Costo de envío</div><div class="fw-bold" id="costoEnvioEstimado">$0.00</div></div>
+                <div><div class="small-muted">Tiempo estimado</div><div class="fw-bold" id="tiempoEstimado">0 min</div></div>
                 <div><div class="small-muted">Total estimado</div><div class="fw-bold" id="totalEstimado">$0.00</div></div>
               </div>
             </div>
@@ -278,20 +279,33 @@
       } catch(err) { showMessage('No se pudieron subir los documentos: ' + err.message, 'danger'); }
     }
     function toggleTransferFields(){ $('paymentTransferFields').style.display = $('metodoPago').value === 'transferencia' ? 'grid' : 'none'; }
-    async function getDistanceAndPrice(){
-      const pos = await getCurrentPositionPromise();
-      const [lat, lng] = [pos.coords.latitude, pos.coords.longitude];
-      const guessKm = 2.5;
-      const distanceKm = guessKm;
-      const deliveryPrice = estimateDeliveryPrice(distanceKm);
-      const orderValue = asNumber($('valorMandado').value, 0);
-      return { lat, lng, distanceKm, deliveryPrice, total: estimateOrderTotal(orderValue, deliveryPrice) };
+    
+async function getDistanceAndPrice(){
+  const pos = await getCurrentPositionPromise();
+  const [lat, lng] = [pos.coords.latitude, pos.coords.longitude];
+  let distanceKm = 2.5;
+  let durationMin = estimateEtaMinutes(distanceKm, 'pendiente');
+  const nearestCourier = await getNearestApprovedCourier(lat, lng).catch(()=>null);
+  if (nearestCourier?.lat && nearestCourier?.lng){
+    try {
+      const metrics = await fetchRouteMetrics(Number(nearestCourier.lat), Number(nearestCourier.lng), lat, lng);
+      distanceKm = metrics.distanceKm;
+      durationMin = metrics.durationMin;
+    } catch(err){
+      distanceKm = Number(nearestCourier.distanceKm?.toFixed(2) || 2.5);
+      durationMin = estimateEtaMinutes(distanceKm, 'pendiente');
     }
+  }
+  const deliveryPrice = estimateDeliveryPrice(distanceKm);
+  const orderValue = asNumber($('valorMandado').value, 0);
+  return { lat, lng, distanceKm, durationMin, deliveryPrice, total: estimateOrderTotal(orderValue, deliveryPrice) };
+}
     async function previewPricing(){
       try {
-        const {distanceKm, deliveryPrice, total} = await getDistanceAndPrice();
+        const {distanceKm, durationMin, deliveryPrice, total} = await getDistanceAndPrice();
         $('distanciaEstimada').textContent = distanceKm.toFixed(1) + ' km';
         $('costoEnvioEstimado').textContent = currency(deliveryPrice);
+        $('tiempoEstimado').textContent = durationMin + ' min';
         $('totalEstimado').textContent = currency(total);
         showMessage('Costo estimado calculado.');
       } catch(err) { showMessage('No se pudo calcular el costo: ' + err.message, 'warning'); }
@@ -334,6 +348,7 @@
           valorMandado: asNumber($('valorMandado').value, 0),
           costoEnvio: pricing.deliveryPrice,
           distanciaKm: pricing.distanceKm,
+          tiempoEstimadoMin: pricing.durationMin,
           total: pricing.total,
           courierRatingPending: false,
           createdAt: FieldValue.serverTimestamp(),
@@ -369,7 +384,7 @@
         createMarker:()=>null
       }).addTo(customerMap);
     }
-    function clearTracking(){ if (trackingUnsub) trackingUnsub(); trackingUnsub = null; courierLayer && courierLayer.clearLayers(); if (routeControl) { try{ customerMap.removeControl(routeControl); }catch{} routeControl = null; } }
+    function clearTracking(){ if (trackingUnsub) trackingUnsub(); trackingUnsub = null; courierLayer && courierLayer.clearLayers(); if (routeControl) { try{ customerMap.removeControl(routeControl); }catch{} routeControl = null; } $('etaCliente').textContent='—'; $('distanciaRepartidor').textContent='—'; $('trackingEstado').textContent='Esperando pedido'; }
     function subscribeToCourier(order){
       clearTracking();
       if (!order?.repartidorId) return;
@@ -378,6 +393,10 @@
         const c = doc.data();
         if (!c?.lat || !c?.lng) return;
         L.marker([c.lat, c.lng]).addTo(courierLayer).bindPopup('Tu repartidor');
+        const km = haversineKm(Number(c.lat), Number(c.lng), Number(order.lat), Number(order.lng));
+        $('distanciaRepartidor').textContent = km.toFixed(2) + ' km';
+        $('etaCliente').textContent = estimateEtaMinutes(km, order.estado) + ' min';
+        $('trackingEstado').textContent = order.estado === 'en_camino' ? 'Tu pedido va en camino' : 'Repartidor asignado';
         drawRoute(order, c);
       });
     }
@@ -443,7 +462,7 @@
         if (!lastNotified.has(d.id) && d.estado === 'aceptado') { browserNotify('Tu pedido fue tomado', 'Un repartidor ya aceptó tu pedido.'); lastNotified.add(d.id); }
         const courier = d.repartidorEmail ? `<div class="small-muted mt-1">Repartidor: ${safe(d.repartidorEmail)}</div>` : '';
         const payment = `<div class="d-flex gap-2 flex-wrap mt-2"><span class="${paymentStatusClass(d.estadoPago || 'pendiente')}">${paymentStatusLabel(d.estadoPago || 'pendiente')}</span><span class="badge-chip">${safe(d.metodoPago).replace(/_/g,' ')}</span></div>`;
-        const pricing = `<div class="small-grid mt-3"><div class="mini-data"><b>Mandado:</b> ${currency(d.valorMandado || 0)}</div><div class="mini-data"><b>Envío:</b> ${currency(d.costoEnvio || 0)}</div><div class="mini-data"><b>Total:</b> ${currency(d.total || 0)}</div><div class="mini-data"><b>Distancia:</b> ${asNumber(d.distanciaKm,0).toFixed(1)} km</div></div>`;
+        const pricing = `<div class="small-grid mt-3"><div class="mini-data"><b>Mandado:</b> ${currency(d.valorMandado || 0)}</div><div class="mini-data"><b>Envío:</b> ${currency(d.costoEnvio || 0)}</div><div class="mini-data"><b>Total:</b> ${currency(d.total || 0)}</div><div class="mini-data"><b>Distancia:</b> ${asNumber(d.distanciaKm,0).toFixed(1)} km</div><div class="mini-data"><b>ETA:</b> ${safe(d.tiempoEstimadoMin,'—')} min</div></div>`;
         const actions = [`<button class="btn btn-soft btn-sm" onclick="focusOrder(${d.lat}, ${d.lng})">Ver en mapa</button>`,`<a class="btn btn-outline-success btn-sm" target="_blank" href="https://www.google.com/maps?q=${d.lat},${d.lng}">Abrir Maps</a>`];
         if (['pendiente','aceptado'].includes(d.estado)) actions.unshift(`<button class="btn btn-outline-danger btn-sm" onclick="cancelOrder('${d.id}','${d.estado}')">Cancelar</button>`);
         if (d.repartidorId && ['aceptado','en_camino'].includes(d.estado)) actions.unshift(`<button class="btn btn-success btn-sm" onclick="subscribeToCourierById('${d.id}')">Seguir pedido</button>`);

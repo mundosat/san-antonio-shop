@@ -1,0 +1,6 @@
+
+Índices que pueden pedirte en Firestore según los filtros que uses:
+1) pedidos: clienteId Asc + createdAt Desc
+2) pedidos: createdAt Desc
+3) calificaciones: repartidorId Asc + fecha Desc
+4) usuarios: role Asc

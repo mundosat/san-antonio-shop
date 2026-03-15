@@ -149,3 +149,40 @@ function orderAgingLabel(data){
 function paymentStatusLabel(status='pendiente'){ return String(status).replace(/_/g,' '); }
 function orderStatusLabel(status='pendiente'){ return String(status).replace(/_/g,' '); }
 function averageRating(items=[]){ if (!items.length) return 0; return items.reduce((a,b)=>a+asNumber(b.rating,0),0)/items.length; }
+
+function haversineKm(lat1, lng1, lat2, lng2){
+  const toRad = d => d * Math.PI / 180;
+  const R = 6371;
+  const dLat = toRad(lat2-lat1), dLng = toRad(lng2-lng1);
+  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLng/2)**2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+async function fetchRouteMetrics(fromLat, fromLng, toLat, toLng){
+  const url = `https://router.project-osrm.org/route/v1/driving/${fromLng},${fromLat};${toLng},${toLat}?overview=false&alternatives=false&steps=false`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('No se pudo calcular la ruta.');
+  const data = await res.json();
+  const route = data?.routes?.[0];
+  if (!route) throw new Error('No hay ruta disponible.');
+  const distanceKm = Number((route.distance / 1000).toFixed(2));
+  const durationMin = Math.max(1, Math.round(route.duration / 60));
+  return {distanceKm, durationMin};
+}
+async function getNearestApprovedCourier(customerLat, customerLng){
+  const snap = await db.collection('repartidores').where('activo','==',true).get().catch(()=>null);
+  if (!snap || snap.empty) return null;
+  let best = null;
+  snap.forEach(doc => {
+    const d = doc.data();
+    if (!d?.lat || !d?.lng) return;
+    const km = haversineKm(customerLat, customerLng, Number(d.lat), Number(d.lng));
+    if (!best || km < best.distanceKm) best = {id: doc.id, ...d, distanceKm: km};
+  });
+  return best;
+}
+function estimateEtaMinutes(distanceKm, status='pendiente'){
+  const base = status === 'en_camino' ? 4 : 8;
+  const travel = Math.max(3, Math.round(asNumber(distanceKm, 0) * 4.2));
+  return base + travel;
+}
+

@@ -78,3 +78,5 @@ code{color:#0e6f39}
 .highlight-box{background:#f4fbf5;border:1px solid #dcefe0;border-radius:18px;padding:1rem}
 .small-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.8rem}
 @media (max-width: 768px){.map-box{height:320px}.hero-panel{margin-top:1rem}.grid-2{grid-template-columns:1fr}}
+
+.live-pill{display:inline-flex;align-items:center;gap:.45rem;padding:.4rem .75rem;border-radius:999px;background:#ecf4ff;color:#145ec9;font-weight:700}
