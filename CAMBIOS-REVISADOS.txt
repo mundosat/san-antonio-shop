@@ -1,0 +1,42 @@
+REVISIÓN Y CORRECCIONES APLICADAS
+
+1. PEDIDOS
+- Se corrigió el flujo para que un pedido pueda guardarse incluso si falla la geolocalización.
+- Ahora el sistema usa una tarifa aproximada como respaldo y marca el pedido con ubicacionAproximada=true.
+- Esto evita que el botón de enviar pedido falle por permisos de ubicación o errores de ruta.
+
+2. REPARTIDORES
+- Se sincroniza el estado aprobado/pendiente/rechazado entre usuarios y repartidores.
+- El panel del repartidor ahora guarda approvedForDeliveries y approvalStatus en la colección repartidores.
+- Se filtró la búsqueda del repartidor más cercano para evitar usar repartidores no aprobados.
+
+3. ADMIN
+- Al aprobar o rechazar, el panel admin actualiza también la colección repartidores.
+- Esto evita inconsistencias entre lo que ve el admin y lo que usa el panel del repartidor.
+
+4. REGLAS FIRESTORE
+- Se ajustaron las reglas para que un repartidor aprobado pueda leer pedidos pendientes.
+- Se ajustaron las reglas para que un repartidor aprobado pueda aceptar un pedido pendiente.
+- Antes de este cambio, el repartidor no podía tomar pedidos porque la regla de update lo bloqueaba.
+
+5. REGLAS STORAGE
+- Se amplió la lectura a usuarios autenticados para revisar documentos de repartidores y comprobantes.
+- Esto ayuda a que el panel admin pueda abrir archivos subidos.
+
+6. CACHÉ / SERVICE WORKER
+- Se actualizó la versión de caché para evitar que el navegador siga cargando archivos viejos.
+
+IMPORTANTE DESPUÉS DE SUBIR
+- Publica nuevamente estos archivos.
+- Actualiza las reglas de Firestore.
+- Actualiza las reglas de Storage.
+- En el navegador, haz recarga forzada o borra caché del sitio.
+- Verifica que el usuario administrador tenga isAdmin: true en usuarios/<uid>.
+
+
+=== AJUSTES FINALES MAR 16 ===
+1) ADMIN, REPARTIDOR Y CLIENTE ya no dependen de orderBy(createdAt) para listar pedidos.
+   Esto evita que pedidos viejos o incompletos desaparezcan del panel si no tenían createdAt.
+2) Se agregó ordenamiento local por createdAt / ultimaActualizacion / deliveredAt.
+3) Se mantuvo createdAt al crear pedidos nuevos para que los registros futuros queden completos.
+4) Se corrigió la carga del mapa operativo del admin y la lista del panel de repartidor para usar la nueva lectura robusta.

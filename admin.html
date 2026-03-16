@@ -94,11 +94,10 @@
     async function ensureAdmin(user){ const profile = await getUserProfile(user.uid); return !!profile?.isAdmin; }
     function todayStart(){ const d = new Date(); d.setHours(0,0,0,0); return d; }
     async function loadStats(){
-      const snap = await db.collection('pedidos').orderBy('createdAt','desc').limit(120).get();
+      const orders = await getPedidosSorted(200);
       let active=0, pending=0, delivered=0, revenue=0;
       const start = todayStart().getTime();
-      snap.forEach(doc => {
-        const d=doc.data();
+      orders.forEach(d => {
         if (!['entregado','cancelado'].includes(d.estado)) active++;
         if (d.estado==='pendiente') pending++;
         const ts = d.deliveredAt?.toDate ? d.deliveredAt.toDate().getTime() : 0;
@@ -124,17 +123,16 @@
       $('approvedCount').textContent = approved;
       list.innerHTML = cards.join('');
     }
-    async function reviewCourier(uid, status){ try{ await db.collection('usuarios').doc(uid).set({ approvalStatus:status, approvedForDeliveries: status === 'aprobado', reviewNotes:$(`note-${uid}`).value.trim(), reviewedAt:FieldValue.serverTimestamp(), updatedAt:FieldValue.serverTimestamp() }, {merge:true}); showMessage('Solicitud actualizada.'); loadRequests(); } catch(err){ showMessage('No se pudo guardar: ' + err.message, 'danger'); } }
+    async function reviewCourier(uid, status){ try{ const approved = status === 'aprobado'; const note = $(`note-${uid}`).value.trim(); await db.collection('usuarios').doc(uid).set({ approvalStatus:status, approvedForDeliveries: approved, reviewNotes:note, reviewedAt:FieldValue.serverTimestamp(), updatedAt:FieldValue.serverTimestamp() }, {merge:true}); await db.collection('repartidores').doc(uid).set({ approvedForDeliveries: approved, approvalStatus: status, reviewNotes: note, updatedAt: FieldValue.serverTimestamp() }, {merge:true}); showMessage('Solicitud actualizada.'); loadRequests(); } catch(err){ showMessage('No se pudo guardar: ' + err.message, 'danger'); } }
     async function loadOrders(showToast=false){
       const filter = $('orderFilter').value, payment = $('paymentFilter').value;
-      const snap = await db.collection('pedidos').orderBy('createdAt','desc').limit(100).get();
+      const orders = await getPedidosSorted(200);
       const list = $('ordersList');
       let cards = [];
-      snap.forEach(doc => {
-        const d = doc.data();
+      orders.forEach(d => {
         if (filter !== 'todos' && d.estado !== filter) return;
         if (payment !== 'todos' && (d.estadoPago || 'pendiente') !== payment) return;
-        cards.push(`<div class="order-card"><div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2"><div><div class="fw-bold">${safe(d.texto)}</div><div class="small-muted">${safe(d.provincia)} • ${safe(d.ciudad)} • ${safe(d.clienteEmail)}</div></div><div class="d-flex gap-2 flex-wrap"><span class="${statusClass(d.estado)}">${orderStatusLabel(d.estado)}</span><span class="${paymentStatusClass(d.estadoPago || 'pendiente')}">${paymentStatusLabel(d.estadoPago || 'pendiente')}</span></div></div><div class="small-grid mb-3"><div class="mini-data"><b>Total:</b> ${currency(d.total || 0)}</div><div class="mini-data"><b>Envío:</b> ${currency(d.costoEnvio || 0)}</div><div class="mini-data"><b>Pago:</b> ${safe(d.metodoPago).replace(/_/g,' ')}</div><div class="mini-data"><b>Creado:</b> ${formatDate(d.createdAt)}</div></div>${d.comprobanteUrl ? `<div class="mb-3"><a href="${d.comprobanteUrl}" target="_blank">Abrir comprobante</a></div>` : ''}<div class="d-flex flex-wrap gap-2"><button class="btn btn-soft btn-sm" onclick="setPaymentStatus('${doc.id}','pagado')">Marcar pagado</button><button class="btn btn-soft btn-sm" onclick="setPaymentStatus('${doc.id}','verificando')">Verificando</button><button class="btn btn-outline-danger btn-sm" onclick="setPaymentStatus('${doc.id}','rechazado')">Rechazar pago</button>${!['entregado','cancelado'].includes(d.estado) ? `<button class="btn btn-outline-danger btn-sm" onclick="forceCancelOrder('${doc.id}')">Cancelar pedido</button>` : ''}</div></div>`);
+        cards.push(`<div class="order-card"><div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2"><div><div class="fw-bold">${safe(d.texto)}</div><div class="small-muted">${safe(d.provincia)} • ${safe(d.ciudad)} • ${safe(d.clienteEmail)}</div></div><div class="d-flex gap-2 flex-wrap"><span class="${statusClass(d.estado)}">${orderStatusLabel(d.estado)}</span><span class="${paymentStatusClass(d.estadoPago || 'pendiente')}">${paymentStatusLabel(d.estadoPago || 'pendiente')}</span></div></div><div class="small-grid mb-3"><div class="mini-data"><b>Total:</b> ${currency(d.total || 0)}</div><div class="mini-data"><b>Envío:</b> ${currency(d.costoEnvio || 0)}</div><div class="mini-data"><b>Pago:</b> ${safe(d.metodoPago).replace(/_/g,' ')}</div><div class="mini-data"><b>Creado:</b> ${formatDate(d.createdAt)}</div></div>${d.comprobanteUrl ? `<div class="mb-3"><a href="${d.comprobanteUrl}" target="_blank">Abrir comprobante</a></div>` : ''}<div class="d-flex flex-wrap gap-2"><button class="btn btn-soft btn-sm" onclick="setPaymentStatus('${d.id}','pagado')">Marcar pagado</button><button class="btn btn-soft btn-sm" onclick="setPaymentStatus('${d.id}','verificando')">Verificando</button><button class="btn btn-outline-danger btn-sm" onclick="setPaymentStatus('${d.id}','rechazado')">Rechazar pago</button>${!['entregado','cancelado'].includes(d.estado) ? `<button class="btn btn-outline-danger btn-sm" onclick="forceCancelOrder('${d.id}')">Cancelar pedido</button>` : ''}</div></div>`);
       });
       list.innerHTML = cards.length ? cards.join('') : '<div class="empty-state">No hay pedidos para ese filtro.</div>';
       if (showToast) showMessage('Pedidos actualizados.');
@@ -169,12 +167,12 @@
     async function loadOpsMap(){
       initOpsMap();
       opsOrdersLayer.clearLayers(); opsCouriersLayer.clearLayers();
-      const [ordersSnap, couriersSnap] = await Promise.all([
-        db.collection('pedidos').orderBy('createdAt','desc').limit(80).get(),
+      const [orders, couriersSnap] = await Promise.all([
+        getPedidosSorted(120),
         db.collection('repartidores').limit(80).get()
       ]);
       let orderCount=0, courierCount=0; const points=[];
-      ordersSnap.forEach(doc=>{ const d=doc.data(); if(!d?.lat||!d?.lng) return; orderCount++; const m=L.marker([d.lat,d.lng]).bindPopup(`<b>Pedido</b><br>${safe(d.texto)}<br>${safe(d.estado)}`); opsOrdersLayer.addLayer(m); points.push([d.lat,d.lng]); });
+      orders.forEach(d=>{ if(!d?.lat||!d?.lng) return; orderCount++; const m=L.marker([d.lat,d.lng]).bindPopup(`<b>Pedido</b><br>${safe(d.texto)}<br>${safe(d.estado)}`); opsOrdersLayer.addLayer(m); points.push([d.lat,d.lng]); });
       couriersSnap.forEach(doc=>{ const d=doc.data(); if(!d?.lat||!d?.lng) return; courierCount++; const m=L.circleMarker([d.lat,d.lng],{radius:8,color:'#145ec9',fillColor:'#145ec9',fillOpacity:0.85}).bindPopup(`<b>${safe(d.email || d.uid || doc.id)}</b><br>${d.activo ? 'activo' : 'sin conexión'}`); opsCouriersLayer.addLayer(m); points.push([d.lat,d.lng]); });
       $('opsCouriers').textContent = courierCount; $('opsOrders').textContent = orderCount;
       if (points.length) opsMap.fitBounds(points,{padding:[30,30]});

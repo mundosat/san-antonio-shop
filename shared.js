@@ -41,6 +41,47 @@ function formatDate(value){
     return date.toLocaleString('es-EC');
   } catch { return 'Ahora'; }
 }
+
+function tsMillis(value){
+  try {
+    if (!value) return 0;
+    if (typeof value.toMillis === 'function') return value.toMillis();
+    if (typeof value.toDate === 'function') return value.toDate().getTime();
+    const date = new Date(value);
+    const time = date.getTime();
+    return Number.isFinite(time) ? time : 0;
+  } catch { return 0; }
+}
+function extractDocData(entry){
+  if (!entry) return null;
+  if (entry.data && typeof entry.data === 'function') return { id: entry.id, ...entry.data() };
+  if (entry.data && typeof entry.data === 'object' && !Array.isArray(entry.data)) return { id: entry.id, ...entry.data };
+  return entry;
+}
+function sortOrdersByRecency(list){
+  return [...list].sort((a,b)=>{
+    const aTime = tsMillis(a.ultimaActualizacion || a.updatedAt || a.deliveredAt || a.createdAt);
+    const bTime = tsMillis(b.ultimaActualizacion || b.updatedAt || b.deliveredAt || b.createdAt);
+    if (bTime !== aTime) return bTime - aTime;
+    return String(b.id || '').localeCompare(String(a.id || ''));
+  });
+}
+function docsFromSource(source){
+  if (!source) return [];
+  if (Array.isArray(source)) return sortOrdersByRecency(source.map(extractDocData).filter(Boolean));
+  if (Array.isArray(source.docs)) return sortOrdersByRecency(source.docs.map(extractDocData).filter(Boolean));
+  return [];
+}
+async function getPedidosSorted(limit=200){
+  const snap = await db.collection('pedidos').limit(limit).get();
+  return docsFromSource(snap);
+}
+function watchPedidosSorted(onData, onError, limit=200){
+  return db.collection('pedidos').limit(limit).onSnapshot(
+    snap => onData(docsFromSource(snap)),
+    onError
+  );
+}
 function cleanPhone(value){ return String(value || '').replace(/[^\d]/g,''); }
 function statusClass(status='pendiente'){ return `status-pill status-${String(status).replace(/\s+/g,'_')}`; }
 function paymentStatusClass(status='pendiente'){ return `status-pill payment-${String(status).replace(/\s+/g,'_')}`; }
@@ -184,10 +225,46 @@ async function getNearestApprovedCourier(customerLat, customerLng){
   snap.forEach(doc => {
     const d = doc.data();
     if (!d?.lat || !d?.lng) return;
+    if (d.approvedForDeliveries === false) return;
     const km = haversineKm(customerLat, customerLng, Number(d.lat), Number(d.lng));
     if (!best || km < best.distanceKm) best = {id: doc.id, ...d, distanceKm: km};
   });
   return best;
+}
+async function getDistanceAndPriceSafe(orderValue=0){
+  const fallbackDistanceKm = 2.5;
+  const fallbackDurationMin = estimateEtaMinutes(fallbackDistanceKm, 'pendiente');
+  const fallback = {
+    lat: null,
+    lng: null,
+    distanceKm: fallbackDistanceKm,
+    durationMin: fallbackDurationMin,
+    deliveryPrice: estimateDeliveryPrice(fallbackDistanceKm),
+    total: estimateOrderTotal(orderValue, estimateDeliveryPrice(fallbackDistanceKm)),
+    usedFallback: true
+  };
+  try {
+    const pos = await getCurrentPositionPromise();
+    const lat = pos.coords.latitude;
+    const lng = pos.coords.longitude;
+    const nearestCourier = await getNearestApprovedCourier(lat, lng).catch(()=>null);
+    let distanceKm = fallbackDistanceKm;
+    let durationMin = fallbackDurationMin;
+    if (nearestCourier?.lat && nearestCourier?.lng){
+      try {
+        const metrics = await fetchRouteMetrics(Number(nearestCourier.lat), Number(nearestCourier.lng), lat, lng);
+        distanceKm = metrics.distanceKm;
+        durationMin = metrics.durationMin;
+      } catch(err){
+        distanceKm = Number(nearestCourier.distanceKm?.toFixed(2) || fallbackDistanceKm);
+        durationMin = estimateEtaMinutes(distanceKm, 'pendiente');
+      }
+    }
+    const deliveryPrice = estimateDeliveryPrice(distanceKm);
+    return { lat, lng, distanceKm, durationMin, deliveryPrice, total: estimateOrderTotal(orderValue, deliveryPrice), usedFallback:false };
+  } catch(err){
+    return fallback;
+  }
 }
 function estimateEtaMinutes(distanceKm, status='pendiente'){
   const base = status === 'en_camino' ? 4 : 8;

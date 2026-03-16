@@ -179,7 +179,7 @@
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
               <div>
                 <h4 class="fw-bold mb-1">Mis pedidos</h4>
-                <div class="small-muted">  </div>
+                <div class="small-muted">El pedido sigue visible aunque cierres la app.</div>
               </div>
               <div class="tabs-inline">
                 <button class="active" onclick="setOrderFilter('todos', this)">Todos</button>
@@ -283,24 +283,8 @@
     function toggleTransferFields(){ $('paymentTransferFields').style.display = $('metodoPago').value === 'transferencia' ? 'grid' : 'none'; }
     
 async function getDistanceAndPrice(){
-  const pos = await getCurrentPositionPromise();
-  const [lat, lng] = [pos.coords.latitude, pos.coords.longitude];
-  let distanceKm = 2.5;
-  let durationMin = estimateEtaMinutes(distanceKm, 'pendiente');
-  const nearestCourier = await getNearestApprovedCourier(lat, lng).catch(()=>null);
-  if (nearestCourier?.lat && nearestCourier?.lng){
-    try {
-      const metrics = await fetchRouteMetrics(Number(nearestCourier.lat), Number(nearestCourier.lng), lat, lng);
-      distanceKm = metrics.distanceKm;
-      durationMin = metrics.durationMin;
-    } catch(err){
-      distanceKm = Number(nearestCourier.distanceKm?.toFixed(2) || 2.5);
-      durationMin = estimateEtaMinutes(distanceKm, 'pendiente');
-    }
-  }
-  const deliveryPrice = estimateDeliveryPrice(distanceKm);
   const orderValue = asNumber($('valorMandado').value, 0);
-  return { lat, lng, distanceKm, durationMin, deliveryPrice, total: estimateOrderTotal(orderValue, deliveryPrice) };
+  return getDistanceAndPriceSafe(orderValue);
 }
     async function previewPricing(){
       try {
@@ -341,6 +325,7 @@ async function getDistanceAndPrice(){
           texto,
           lat: pricing.lat,
           lng: pricing.lng,
+          ubicacionAproximada: pricing.usedFallback,
           estado: 'pendiente',
           metodoPago,
           estadoPago: metodoPago === 'transferencia' ? 'verificando' : 'pendiente',
@@ -363,7 +348,7 @@ async function getDistanceAndPrice(){
         $('bancoTransferencia').value = '';
         $('comprobantePago').value = '';
         await previewPricing();
-        showMessage('Pedido enviado correctamente.');
+        showMessage(pricing.usedFallback ? 'Pedido enviado correctamente. Se usó una tarifa aproximada porque no se pudo obtener tu ubicación exacta.' : 'Pedido enviado correctamente.');
       } catch(err) { showMessage('No se pudo guardar el pedido: ' + err.message, 'danger'); }
     }
     async function cancelOrder(id, status){
@@ -454,7 +439,7 @@ async function getDistanceAndPrice(){
     }
     function renderCustomerOrders(snapshot){
       const list = $('listaPedidos'); pedidosLayer.clearLayers();
-      const docs = snapshot.docs.map(doc => ({id:doc.id, ...doc.data()})).filter(orderMatchesFilter);
+      const docs = docsFromSource(snapshot).filter(orderMatchesFilter);
       if (!docs.length) { list.innerHTML = '<div class="empty-state">Todavía no tienes pedidos para este filtro.</div>'; renderRatingBox(null); clearTracking(); return; }
       let html = '', deliveredNeedingRating = null, activeTracked = null;
       docs.forEach(d => {
@@ -477,7 +462,7 @@ async function getDistanceAndPrice(){
     }
     function setOrderFilter(filter, el){ orderFilter = filter; document.querySelectorAll('.tabs-inline button').forEach(b => b.classList.remove('active')); if (el) el.classList.add('active'); refreshMyOrders(); }
     function refreshMyOrders(){ if (pedidosUnsubscribe) pedidosUnsubscribe(); setupOrdersListener(); }
-    function setupOrdersListener(){ pedidosUnsubscribe = db.collection('pedidos').where('clienteId','==',appUser.uid).orderBy('createdAt','desc').onSnapshot(renderCustomerOrders, err => showMessage(err.message,'danger')); }
+    function setupOrdersListener(){ pedidosUnsubscribe = db.collection('pedidos').where('clienteId','==',appUser.uid).limit(120).onSnapshot(snap => renderCustomerOrders(docsFromSource(snap)), err => showMessage(err.message,'danger')); }
     async function startCustomerApp(user, profile){
       appUser = user; appProfile = profile || {role:'cliente'};
       fillProvinceSelect('clienteProvincia', profile?.provincia || '');
