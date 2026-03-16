@@ -17,7 +17,7 @@
   <title>San Antonio Shop Ecuador V6</title>
   <meta name="description" content="Mandados y entregas para todo Ecuador con tracking en vivo, ETA y panel profesional." />
 </head>
-<body>
+<body class="windows-bg">
   <div class="container py-4 py-lg-5">
     <div class="brand-badge mb-4">
       <img src="icons/icon-192.png" alt="Logo" />
@@ -47,15 +47,15 @@
         <div class="col-lg-5">
           <div class="section-card p-4">
             <h3 class="fw-bold mb-3">Entrar o registrarte</h3>
-            <input id="email" type="email" class="form-control mb-3" placeholder="Correo electrónico" />
-            <input id="password" type="password" class="form-control mb-3" placeholder="Contraseña" />
+            <input class="input-modern" id="email" type="email" class="form-control mb-3" placeholder="Correo electrónico" />
+            <input class="input-modern" id="password" type="password" class="form-control mb-3" placeholder="Contraseña" />
             <select id="role" class="form-select mb-3">
               <option value="cliente">Cliente</option>
               <option value="repartidor">Repartidor</option>
             </select>
             <div class="d-grid gap-2">
-              <button class="btn btn-success" onclick="loginUser()">Iniciar sesión</button>
-              <button class="btn btn-outline-success" onclick="registerUser()">Crear cuenta</button>
+              <button class="btn-modern" class="btn btn-success" onclick="loginUser()">Iniciar sesión</button>
+              <button class="btn-modern" class="btn btn-outline-success" onclick="registerUser()">Crear cuenta</button>
             </div>
             <div class="small-muted mt-3">Los repartidores quedan en revisión hasta que tú los apruebes desde el panel admin.</div>
           </div>
@@ -73,26 +73,26 @@
                 <div class="small-muted">Sesión: <span id="userEmail"></span></div>
               </div>
               <div class="top-actions">
-                <button class="btn btn-soft" onclick="locateUser(true)">Actualizar ubicación</button>
+                <button class="btn-modern" class="btn btn-soft" onclick="locateUser(true)">Actualizar ubicación</button>
                 <a href="repartidor.html" class="btn btn-soft">Repartidores</a>
                 <a href="admin.html" class="btn btn-soft">Admin</a>
-                <button class="btn btn-outline-success" onclick="logoutUser()">Cerrar sesión</button>
+                <button class="btn-modern" class="btn btn-outline-success" onclick="logoutUser()">Cerrar sesión</button>
               </div>
             </div>
 
             <div class="grid-2 mb-3">
               <div>
                 <label class="form-label">¿Qué necesitas?</label>
-                <textarea id="pedidoTexto" class="form-control" rows="3" placeholder="Ejemplo: comprar medicinas, retirar comida, llevar paquete, compras del súper..."></textarea>
+                <textarea class="input-modern" id="pedidoTexto" class="form-control" rows="3" placeholder="Ejemplo: comprar medicinas, retirar comida, llevar paquete, compras del súper..."></textarea>
               </div>
               <div class="small-grid">
                 <div>
                   <label class="form-label">Valor del mandado</label>
-                  <input id="valorMandado" type="number" min="0" step="0.01" class="form-control" placeholder="0.00" />
+                  <input class="input-modern" id="valorMandado" type="number" min="0" step="0.01" class="form-control" placeholder="0.00" />
                 </div>
                 <div>
                   <label class="form-label">Teléfono</label>
-                  <input id="clienteTelefono" type="tel" class="form-control" placeholder="09xxxxxxxx" />
+                  <input class="input-modern" id="clienteTelefono" type="tel" class="form-control" placeholder="09xxxxxxxx" />
                 </div>
                 <div>
                   <label class="form-label">Provincia</label>
@@ -100,7 +100,7 @@
                 </div>
                 <div>
                   <label class="form-label">Ciudad</label>
-                  <input id="clienteCiudad" class="form-control" placeholder="Ciudad" />
+                  <input class="input-modern" id="clienteCiudad" class="form-control" placeholder="Ciudad" />
                 </div>
               </div>
             </div>
@@ -108,7 +108,7 @@
             <div class="grid-2 mb-3">
               <div>
                 <label class="form-label">Referencia</label>
-                <input id="clienteReferencia" class="form-control" placeholder="Dirección, barrio, color de casa, punto de encuentro" />
+                <input class="input-modern" id="clienteReferencia" class="form-control" placeholder="Dirección, barrio, color de casa, punto de encuentro" />
               </div>
               <div class="grid-2">
                 <div>
@@ -117,7 +117,7 @@
                 </div>
                 <div>
                   <label class="form-label">Banco o referencia</label>
-                  <input id="referenciaPago" class="form-control" placeholder="Opcional" />
+                  <input class="input-modern" id="referenciaPago" class="form-control" placeholder="Opcional" />
                 </div>
               </div>
             </div>
@@ -125,11 +125,11 @@
             <div id="paymentTransferFields" class="grid-2 mb-3" style="display:none;">
               <div>
                 <label class="form-label">Banco</label>
-                <input id="bancoTransferencia" class="form-control" placeholder="Banco de la transferencia" />
+                <input class="input-modern" id="bancoTransferencia" class="form-control" placeholder="Banco de la transferencia" />
               </div>
               <div>
                 <label class="form-label">Comprobante</label>
-                <input id="comprobantePago" type="file" class="form-control" accept="image/*,.pdf" />
+                <input class="input-modern" id="comprobantePago" type="file" class="form-control" accept="image/*,.pdf" />
               </div>
             </div>
 
@@ -143,8 +143,8 @@
             </div>
 
             <div class="top-actions">
-              <button class="btn btn-success" onclick="previewPricing()">Calcular costo</button>
-              <button class="btn btn-outline-success" onclick="createOrder()">Enviar pedido</button>
+              <button class="btn-modern" class="btn btn-success" onclick="previewPricing()">Calcular costo</button>
+              <button class="btn-modern" class="btn btn-outline-success" onclick="createOrder()">Enviar pedido</button>
             </div>
           </div>
 
@@ -157,21 +157,21 @@
               <span id="repartidorBanner" class="small-muted"></span>
             </div>
             <div class="grid-2">
-              <input id="fullName" class="form-control" placeholder="Nombre completo" />
-              <input id="cedula" class="form-control" placeholder="Cédula" />
-              <input id="telefonoRepartidor" class="form-control" placeholder="Teléfono" />
+              <input class="input-modern" id="fullName" class="form-control" placeholder="Nombre completo" />
+              <input class="input-modern" id="cedula" class="form-control" placeholder="Cédula" />
+              <input class="input-modern" id="telefonoRepartidor" class="form-control" placeholder="Teléfono" />
               <select id="provinciaRepartidor" class="form-select"></select>
-              <input id="ciudadRepartidor" class="form-control" placeholder="Ciudad" />
+              <input class="input-modern" id="ciudadRepartidor" class="form-control" placeholder="Ciudad" />
               <select id="vehicleType" class="form-select"><option value="moto">Moto</option><option value="carro">Carro</option><option value="bicicleta">Bicicleta</option></select>
-              <input id="placa" class="form-control" placeholder="Placa" />
-              <input id="licenseNumber" class="form-control" placeholder="Número de licencia" />
-              <input id="cedulaDoc" type="file" class="form-control" accept="image/*,.pdf" />
-              <input id="licenciaDoc" type="file" class="form-control" accept="image/*,.pdf" />
-              <input id="recordDoc" type="file" class="form-control" accept="image/*,.pdf" />
-              <textarea id="notes" class="form-control" rows="3" placeholder="Notas o experiencia"></textarea>
+              <input class="input-modern" id="placa" class="form-control" placeholder="Placa" />
+              <input class="input-modern" id="licenseNumber" class="form-control" placeholder="Número de licencia" />
+              <input class="input-modern" id="cedulaDoc" type="file" class="form-control" accept="image/*,.pdf" />
+              <input class="input-modern" id="licenciaDoc" type="file" class="form-control" accept="image/*,.pdf" />
+              <input class="input-modern" id="recordDoc" type="file" class="form-control" accept="image/*,.pdf" />
+              <textarea class="input-modern" id="notes" class="form-control" rows="3" placeholder="Notas o experiencia"></textarea>
             </div>
             <div class="top-actions mt-3">
-              <button class="btn btn-success" onclick="submitCourierApplication()">Enviar solicitud</button>
+              <button class="btn-modern" class="btn btn-success" onclick="submitCourierApplication()">Enviar solicitud</button>
             </div>
           </div>
 
@@ -182,9 +182,9 @@
                 <div class="small-muted">El pedido sigue visible aunque cierres la app.</div>
               </div>
               <div class="tabs-inline">
-                <button class="active" onclick="setOrderFilter('todos', this)">Todos</button>
-                <button onclick="setOrderFilter('activos', this)">Activos</button>
-                <button onclick="setOrderFilter('historial', this)">Historial</button>
+                <button class="btn-modern" class="active" onclick="setOrderFilter('todos', this)">Todos</button>
+                <button class="btn-modern" onclick="setOrderFilter('activos', this)">Activos</button>
+                <button class="btn-modern" onclick="setOrderFilter('historial', this)">Historial</button>
               </div>
             </div>
             <div id="listaPedidos"></div>
@@ -210,7 +210,7 @@
           <div class="fw-bold">Instalar San Antonio Shop</div>
           <div class="small" style="opacity:.8">Úsala como una app desde tu celular o computadora.</div>
         </div>
-        <button class="btn btn-success" onclick="installApp()">Instalar ahora</button>
+        <button class="btn-modern" class="btn btn-success" onclick="installApp()">Instalar ahora</button>
       </div>
     </div>
   </div>
@@ -410,10 +410,10 @@ async function getDistanceAndPrice(){
           <div class="fw-bold mb-2">Califica a tu repartidor</div>
           <div class="small-muted mb-3">Pedido: ${safe(order.texto)}</div>
           <div class="rating-stars mb-3">
-            ${[1,2,3,4,5].map(n => `<button id="star-${n}" onclick="setRatingStar(${n})">⭐ ${n}</button>`).join('')}
+            ${[1,2,3,4,5].map(n => `<button class="btn-modern" id="star-${n}" onclick="setRatingStar(${n})">⭐ ${n}</button>`).join('')}
           </div>
-          <textarea id="ratingComment" class="form-control mb-3" rows="3" placeholder="Comentario opcional"></textarea>
-          <button class="btn btn-success" onclick="submitRating()">Guardar calificación</button>
+          <textarea class="input-modern" id="ratingComment" class="form-control mb-3" rows="3" placeholder="Comentario opcional"></textarea>
+          <button class="btn-modern" class="btn btn-success" onclick="submitRating()">Guardar calificación</button>
         </div>`;
     }
     let selectedStars = 0;
@@ -450,9 +450,9 @@ async function getDistanceAndPrice(){
         const courier = d.repartidorEmail ? `<div class="small-muted mt-1">Repartidor: ${safe(d.repartidorEmail)}</div>` : '';
         const payment = `<div class="d-flex gap-2 flex-wrap mt-2"><span class="${paymentStatusClass(d.estadoPago || 'pendiente')}">${paymentStatusLabel(d.estadoPago || 'pendiente')}</span><span class="badge-chip">${safe(d.metodoPago).replace(/_/g,' ')}</span></div>`;
         const pricing = `<div class="small-grid mt-3"><div class="mini-data"><b>Mandado:</b> ${currency(d.valorMandado || 0)}</div><div class="mini-data"><b>Envío:</b> ${currency(d.costoEnvio || 0)}</div><div class="mini-data"><b>Total:</b> ${currency(d.total || 0)}</div><div class="mini-data"><b>Distancia:</b> ${asNumber(d.distanciaKm,0).toFixed(1)} km</div><div class="mini-data"><b>ETA:</b> ${safe(d.tiempoEstimadoMin,'—')} min</div></div>`;
-        const actions = [`<button class="btn btn-soft btn-sm" onclick="focusOrder(${d.lat}, ${d.lng})">Ver en mapa</button>`,`<a class="btn btn-outline-success btn-sm" target="_blank" href="https://www.google.com/maps?q=${d.lat},${d.lng}">Abrir Maps</a>`];
-        if (['pendiente','aceptado'].includes(d.estado)) actions.unshift(`<button class="btn btn-outline-danger btn-sm" onclick="cancelOrder('${d.id}','${d.estado}')">Cancelar</button>`);
-        if (d.repartidorId && ['aceptado','en_camino'].includes(d.estado)) actions.unshift(`<button class="btn btn-success btn-sm" onclick="subscribeToCourierById('${d.id}')">Seguir pedido</button>`);
+        const actions = [`<button class="btn-modern" class="btn btn-soft btn-sm" onclick="focusOrder(${d.lat}, ${d.lng})">Ver en mapa</button>`,`<a class="btn btn-outline-success btn-sm" target="_blank" href="https://www.google.com/maps?q=${d.lat},${d.lng}">Abrir Maps</a>`];
+        if (['pendiente','aceptado'].includes(d.estado)) actions.unshift(`<button class="btn-modern" class="btn btn-outline-danger btn-sm" onclick="cancelOrder('${d.id}','${d.estado}')">Cancelar</button>`);
+        if (d.repartidorId && ['aceptado','en_camino'].includes(d.estado)) actions.unshift(`<button class="btn-modern" class="btn btn-success btn-sm" onclick="subscribeToCourierById('${d.id}')">Seguir pedido</button>`);
         html += `<div class="order-card"><div class="d-flex justify-content-between align-items-start gap-2 flex-wrap"><div><div class="fw-bold">${safe(d.texto,'Pedido sin detalle')}</div><div class="small-muted">${safe(d.referencia,'Sin referencia adicional')}</div></div><div class="d-flex gap-2 align-items-center"><span class="${statusClass(d.estado)}">${orderStatusLabel(d.estado)}</span>${orderAgingLabel(d)}</div></div><div class="small-muted mt-2">${safe(d.provincia,'')}${d.ciudad ? ' • ' + d.ciudad : ''}</div><div class="small-muted">Creado: ${formatDate(d.createdAt)}</div>${courier}${payment}${pricing}<div class="top-actions mt-3">${actions.join('')}</div></div>`;
       });
       list.innerHTML = html;
