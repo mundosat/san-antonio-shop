@@ -34,7 +34,7 @@
         <div class="col-lg-7">
           <div class="hero-panel">
             <h1>Delivery estilo Uber, pero para cualquier mandado.</h1>
-            <p>Clientes, repartidores aprobados y control administrativo. Seguimiento en vivo, rutas gratis y cálculo automático del envío.</p>
+            <p>Clientes, repartidores aprobados y control administrativo. Seguimiento en vivo, rutas con Google Maps opcional y cálculo automático del envío.</p>
             <div>
               <span class="feature-chip">🚚 Ruta automática</span>
               <span class="feature-chip">📦 Seguimiento en vivo</span>
@@ -70,7 +70,7 @@
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
               <div>
                 <h3 class="fw-bold mb-1">Panel del cliente</h3>
-                <div class="small-muted">Sesión: <span id="userEmail"></span></div><div class="info-strip mt-2"><span class="info-chip" id="profileRoleChip">Cliente</span><span class="info-chip" id="approvalChip">Listo para pedir</span></div>
+                <div class="small-muted">Sesión: <span id="userEmail"></span></div>
               </div>
               <div class="top-actions">
                 <button class="btn btn-soft" onclick="locateUser(true)">Actualizar ubicación</button>
@@ -217,6 +217,8 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+  <script src="google-maps-config.js"></script>
+  <script src="maps-loader.js"></script>
   <script src="shared.js"></script>
   <script>
     let appUser = null, appProfile = null, customerMap, pedidosLayer, courierLayer, userMarker, pedidosUnsubscribe = null, cleanupTimer = null, userLocation = null, trackingUnsub = null, routeControl = null, orderFilter = 'todos', activeRatingOrder = null, lastNotified = new Set();
@@ -463,12 +465,10 @@ async function getDistanceAndPrice(){
         const courier = d.repartidorEmail ? `<div class="small-muted mt-1">Repartidor: ${safe(d.repartidorEmail)}</div>` : '';
         const payment = `<div class="d-flex gap-2 flex-wrap mt-2"><span class="${paymentStatusClass(d.estadoPago || 'pendiente')}">${paymentStatusLabel(d.estadoPago || 'pendiente')}</span><span class="badge-chip">${safe(d.metodoPago).replace(/_/g,' ')}</span></div>`;
         const pricing = `<div class="small-grid mt-3"><div class="mini-data"><b>Mandado:</b> ${currency(d.valorMandado || 0)}</div><div class="mini-data"><b>Envío:</b> ${currency(d.costoEnvio || 0)}</div><div class="mini-data"><b>Total:</b> ${currency(d.total || 0)}</div><div class="mini-data"><b>Distancia:</b> ${asNumber(d.distanciaKm,0).toFixed(1)} km</div><div class="mini-data"><b>ETA:</b> ${safe(d.tiempoEstimadoMin,'—')} min</div></div>`;
-        const progress = `<div class="progress-wrap"><div class="progress-bar-lite" style="width:${orderProgressPercent(d.estado)}%"></div></div><div class="small-muted mt-2">${orderTimelineLabel(d.estado)}</div>`;
         const actions = [`<button class="btn btn-soft btn-sm" onclick="focusOrder(${d.lat}, ${d.lng})">Ver en mapa</button>`,`<a class="btn btn-outline-success btn-sm" target="_blank" href="https://www.google.com/maps?q=${d.lat},${d.lng}">Abrir Maps</a>`];
-        if (d.clienteTelefono && d.repartidorId) { const wa = courierWhatsAppLink(d.clienteTelefono, 'Hola, te escribo por tu pedido de San Antonio Shop.'); if (wa) actions.unshift(`<a class="btn btn-soft btn-sm" target="_blank" href="${wa}">WhatsApp</a>`); }
         if (['pendiente','aceptado'].includes(d.estado)) actions.unshift(`<button class="btn btn-outline-danger btn-sm" onclick="cancelOrder('${d.id}','${d.estado}')">Cancelar</button>`);
         if (d.repartidorId && ['aceptado','en_camino'].includes(d.estado)) actions.unshift(`<button class="btn btn-success btn-sm" onclick="subscribeToCourierById('${d.id}')">Seguir pedido</button>`);
-        html += `<div class="order-card"><div class="d-flex justify-content-between align-items-start gap-2 flex-wrap"><div><div class="fw-bold">${safe(d.texto,'Pedido sin detalle')}</div><div class="small-muted">${safe(d.referencia,'Sin referencia adicional')}</div></div><div class="d-flex gap-2 align-items-center"><span class="${statusClass(d.estado)}">${orderStatusLabel(d.estado)}</span>${orderAgingLabel(d)}</div></div><div class="small-muted mt-2">${safe(d.provincia,'')}${d.ciudad ? ' • ' + d.ciudad : ''}</div><div class="small-muted">Creado: ${formatDate(d.createdAt)}</div>${courier}${payment}${pricing}${progress}<div class="top-actions mt-3">${actions.join('')}</div></div>`;
+        html += `<div class="order-card"><div class="d-flex justify-content-between align-items-start gap-2 flex-wrap"><div><div class="fw-bold">${safe(d.texto,'Pedido sin detalle')}</div><div class="small-muted">${safe(d.referencia,'Sin referencia adicional')}</div></div><div class="d-flex gap-2 align-items-center"><span class="${statusClass(d.estado)}">${orderStatusLabel(d.estado)}</span>${orderAgingLabel(d)}</div></div><div class="small-muted mt-2">${safe(d.provincia,'')}${d.ciudad ? ' • ' + d.ciudad : ''}</div><div class="small-muted">Creado: ${formatDate(d.createdAt)}</div>${courier}${payment}${pricing}<div class="top-actions mt-3">${actions.join('')}</div></div>`;
       });
       list.innerHTML = html;
       if (pedidosLayer.getLayers().length) customerMap.fitBounds(L.featureGroup(pedidosLayer.getLayers()).getBounds().pad(0.18));
@@ -488,13 +488,11 @@ async function getDistanceAndPrice(){
       $('authSection').style.display = 'none'; $('appSection').style.display = 'block'; $('userEmail').textContent = user.email || '';
       initCustomerMap(); locateUser(); requestNotificationPermission(); previewPricing().catch(()=>{});
       const role = profile?.role || 'cliente';
-      $('profileRoleChip').textContent = role === 'repartidor' ? 'Repartidor/Cliente' : 'Cliente';
       if (role === 'repartidor') {
         $('courierApplicationCard').style.display = 'block';
         const status = profile?.approvalStatus || 'pendiente';
         $('repartidorBanner').innerHTML = status === 'aprobado' ? 'Tu perfil de repartidor ya está <b>aprobado</b>. Puedes abrir el <a href="repartidor.html">panel de repartidores</a>.' : `Tu perfil de repartidor está <b>${status}</b>. Puedes completar o corregir tus datos mientras esperas revisión.`;
-        $('approvalChip').textContent = status === 'aprobado' ? 'Repartidor aprobado' : `Revisión: ${status}`;
-      } else { $('courierApplicationCard').style.display = 'none'; $('repartidorBanner').innerHTML = ''; $('approvalChip').textContent = 'Listo para pedir'; }
+      } else { $('courierApplicationCard').style.display = 'none'; $('repartidorBanner').innerHTML = ''; }
       if (profile?.fullName) $('fullName').value = profile.fullName;
       if (profile?.cedula) $('cedula').value = profile.cedula;
       if (profile?.telefono) { $('telefonoRepartidor').value = profile.telefono; $('clienteTelefono').value = profile.telefono; }

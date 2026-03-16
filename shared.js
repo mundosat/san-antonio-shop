@@ -68,6 +68,7 @@ window.addEventListener('beforeinstallprompt', e => {
 });
 async function installApp(){ if (!installPrompt) return; await installPrompt.prompt(); await installPrompt.userChoice; installPrompt = null; const b = $('installBanner'); if (b) b.style.display = 'none'; }
 if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('service-worker.js').catch(console.error));
+if (typeof window.loadGoogleMapsApi === 'function') window.addEventListener('load', () => window.loadGoogleMapsApi().catch(err => console.warn('Google Maps opcional no cargó:', err)));
 async function saveUserProfile(user, role, extra={}){
   return db.collection('usuarios').doc(user.uid).set({
     email: user.email || '',
@@ -150,25 +151,6 @@ function paymentStatusLabel(status='pendiente'){ return String(status).replace(/
 function orderStatusLabel(status='pendiente'){ return String(status).replace(/_/g,' '); }
 function averageRating(items=[]){ if (!items.length) return 0; return items.reduce((a,b)=>a+asNumber(b.rating,0),0)/items.length; }
 
-function orderProgressPercent(status='pendiente'){
-  const map = {pendiente: 20, aceptado: 45, en_camino: 75, entregado: 100, cancelado: 100};
-  return map[String(status)] ?? 20;
-}
-function orderTimelineLabel(status='pendiente'){
-  const labels = {
-    pendiente: 'Esperando repartidor',
-    aceptado: 'Pedido aceptado',
-    en_camino: 'En camino',
-    entregado: 'Entregado',
-    cancelado: 'Cancelado'
-  };
-  return labels[String(status)] || 'Pendiente';
-}
-function courierWhatsAppLink(phone, text){
-  const cleaned = cleanPhone(phone);
-  return cleaned ? `https://wa.me/${cleaned}?text=${encodeURIComponent(text || '')}` : '';
-}
-
 function haversineKm(lat1, lng1, lat2, lng2){
   const toRad = d => d * Math.PI / 180;
   const R = 6371;
@@ -177,6 +159,14 @@ function haversineKm(lat1, lng1, lat2, lng2){
   return 2 * R * Math.asin(Math.sqrt(a));
 }
 async function fetchRouteMetrics(fromLat, fromLng, toLat, toLng){
+  if (typeof window.googleDistanceMatrixRoute === 'function') {
+    try {
+      const googleMetrics = await window.googleDistanceMatrixRoute(fromLat, fromLng, toLat, toLng);
+      if (googleMetrics?.distanceKm) return googleMetrics;
+    } catch (err) {
+      console.warn('Google Maps no estuvo disponible, se usará OSRM.', err);
+    }
+  }
   const url = `https://router.project-osrm.org/route/v1/driving/${fromLng},${fromLat};${toLng},${toLat}?overview=false&alternatives=false&steps=false`;
   const res = await fetch(url);
   if (!res.ok) throw new Error('No se pudo calcular la ruta.');
@@ -185,7 +175,7 @@ async function fetchRouteMetrics(fromLat, fromLng, toLat, toLng){
   if (!route) throw new Error('No hay ruta disponible.');
   const distanceKm = Number((route.distance / 1000).toFixed(2));
   const durationMin = Math.max(1, Math.round(route.duration / 60));
-  return {distanceKm, durationMin};
+  return {distanceKm, durationMin, provider:'osrm'};
 }
 async function getNearestApprovedCourier(customerLat, customerLng){
   const snap = await db.collection('repartidores').where('activo','==',true).get().catch(()=>null);

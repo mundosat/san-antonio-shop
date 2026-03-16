@@ -80,10 +80,3 @@ code{color:#0e6f39}
 @media (max-width: 768px){.map-box{height:320px}.hero-panel{margin-top:1rem}.grid-2{grid-template-columns:1fr}}
 
 .live-pill{display:inline-flex;align-items:center;gap:.45rem;padding:.4rem .75rem;border-radius:999px;background:#ecf4ff;color:#145ec9;font-weight:700}
-
-.progress-wrap{margin-top:.9rem;background:#edf5ef;border-radius:999px;overflow:hidden;height:10px}
-.progress-bar-lite{height:100%;background:linear-gradient(135deg,var(--green),var(--green-dark));width:0;transition:width .25s ease}
-.info-strip{display:flex;gap:.7rem;flex-wrap:wrap;align-items:center}
-.info-chip{display:inline-flex;align-items:center;gap:.45rem;padding:.45rem .8rem;border-radius:999px;background:#f3faf4;border:1px solid #dcefe0;color:var(--green-dark);font-weight:700;font-size:.86rem}
-.panel-actions{display:flex;gap:.75rem;flex-wrap:wrap}
-.sticky-top-lite{position:sticky;top:14px;z-index:20}
