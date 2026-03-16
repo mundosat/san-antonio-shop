@@ -45,3 +45,15 @@ IMPORTANTE DESPUÉS DE SUBIR
 - Registro PRO de repartidores: al crear cuenta como repartidor ahora se llenan y envían todos los datos y documentos desde el mismo formulario.
 - Sincronización completa usuarios/repartidores: la solicitud y su revisión se guardan en ambas colecciones para que el panel admin no muestre datos vacíos.
 - Panel admin mejorado: las solicitudes se leen combinando datos de usuarios y repartidores para mostrar nombre, teléfono, cédula, vehículo, placa, licencia y documentos correctamente.
+
+
+=== MEJORAS PRO ADMIN / REPARTIDORES ===
+- Solicitudes de repartidores en vista inteligente: por defecto solo se ven pendientes.
+- Cuando el admin APRUEBA, la solicitud queda guardada pero se OCULTA del panel de pendientes.
+- Cuando el admin RECHAZA, la solicitud se archiva y se borra de la cola visible.
+- Botón para borrar pedidos cancelados o con pago rechazado.
+- Botón para limpiar solicitudes rechazadas ocultas.
+- Mapa operativo en vivo con Leaflet CSS cargado correctamente.
+- Pedidos y solicitudes en tiempo real con onSnapshot.
+- Mejoras visuales glass / minimalistas en admin.
+- Normalización de nombre, email, teléfono, vehículo, cédula y licencia en tarjetas de solicitudes.
