@@ -40,3 +40,8 @@ IMPORTANTE DESPUÉS DE SUBIR
 2) Se agregó ordenamiento local por createdAt / ultimaActualizacion / deliveredAt.
 3) Se mantuvo createdAt al crear pedidos nuevos para que los registros futuros queden completos.
 4) Se corrigió la carga del mapa operativo del admin y la lista del panel de repartidor para usar la nueva lectura robusta.
+
+
+- Registro PRO de repartidores: al crear cuenta como repartidor ahora se llenan y envían todos los datos y documentos desde el mismo formulario.
+- Sincronización completa usuarios/repartidores: la solicitud y su revisión se guardan en ambas colecciones para que el panel admin no muestre datos vacíos.
+- Panel admin mejorado: las solicitudes se leen combinando datos de usuarios y repartidores para mostrar nombre, teléfono, cédula, vehículo, placa, licencia y documentos correctamente.

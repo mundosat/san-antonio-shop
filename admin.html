@@ -59,7 +59,7 @@
 
         <div class="col-lg-5">
           <div class="section-card p-3 p-lg-4 mb-4">
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3"><h4 class="fw-bold mb-0">Solicitudes de repartidores</h4><button class="btn btn-soft btn-sm" onclick="loadRequests()">Actualizar</button></div>
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3"><h4 class="fw-bold mb-0">Solicitudes de repartidores</h4><button class="btn btn-soft btn-sm" onclick="loadRequests(true)">Actualizar</button></div>
             <div id="requestList"></div>
           </div>
           <div class="section-card p-3 p-lg-4 mb-4">
@@ -109,21 +109,31 @@
       $('ordersDelivered').textContent = delivered;
       $('estimatedRevenue').textContent = currency(revenue);
     }
-    async function loadRequests(){
-      const snap = await db.collection('usuarios').where('role','==','repartidor').get();
-      const list = $('requestList'); let pending=0, approved=0; if (snap.empty) { list.innerHTML='<div class="empty-state">Aún no hay solicitudes de repartidores.</div>'; $('pendingCount').textContent='0'; $('approvedCount').textContent='0'; return; }
-      let cards = [];
-      snap.forEach(doc => {
-        const d = doc.data(), st = d.approvalStatus || 'pendiente';
+    async function loadRequests(showToast=false){
+      const [usersSnap, couriersSnap] = await Promise.all([
+        db.collection('usuarios').where('role','==','repartidor').get(),
+        db.collection('repartidores').get()
+      ]);
+      const list = $('requestList');
+      const map = new Map();
+      usersSnap.forEach(doc => map.set(doc.id, {id:doc.id, ...doc.data()}));
+      couriersSnap.forEach(doc => map.set(doc.id, {...map.get(doc.id), id:doc.id, ...doc.data()}));
+      const items = [...map.values()].filter(d => d.role === 'repartidor' || d.cedula || d.vehicleType || d.licenseNumber);
+      let pending=0, approved=0;
+      if (!items.length) { list.innerHTML='<div class="empty-state">Aún no hay solicitudes de repartidores.</div>'; $('pendingCount').textContent='0'; $('approvedCount').textContent='0'; return; }
+      const cards = sortOrdersByRecency(items).map(d => {
+        const st = d.approvalStatus || 'pendiente';
         if (st==='pendiente') pending++;
         if (st==='aprobado') approved++;
-        cards.push(`<div class="order-card"><div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2"><div><div class="fw-bold">${safe(d.fullName,'Sin nombre')} <span class="${statusClass(st)}">${st}</span></div><div class="small-muted">${safe(d.email)} • ${safe(d.telefono)} • ${safe(d.provincia)} / ${safe(d.ciudad)}</div></div><div class="small-muted">Actualizado: ${formatDate(d.updatedAt || d.createdAt)}</div></div><div class="small-grid mb-3"><div class="mini-data"><b>Cédula:</b> ${safe(d.cedula)}</div><div class="mini-data"><b>Vehículo:</b> ${safe(d.vehicleType)}</div><div class="mini-data"><b>Placa:</b> ${safe(d.placa)}</div><div class="mini-data"><b>Licencia:</b> ${safe(d.licenseNumber)}</div></div><div class="small-grid mb-3"><div class="mini-data"><b>Cédula:</b> ${d.cedulaDocUrl ? `<a href="${d.cedulaDocUrl}" target="_blank">Abrir</a>` : 'No subida'}</div><div class="mini-data"><b>Licencia:</b> ${d.licenciaDocUrl ? `<a href="${d.licenciaDocUrl}" target="_blank">Abrir</a>` : 'No subida'}</div><div class="mini-data"><b>Récord:</b> ${d.recordDocUrl ? `<a href="${d.recordDocUrl}" target="_blank">Abrir</a>` : 'No subido'}</div></div><textarea id="note-${doc.id}" class="form-control mb-3" rows="2" placeholder="Nota interna o motivo">${d.reviewNotes || ''}</textarea><div class="d-flex flex-wrap gap-2"><button class="btn btn-success btn-sm" onclick="reviewCourier('${doc.id}','aprobado')">Aprobar</button><button class="btn btn-outline-danger btn-sm" onclick="reviewCourier('${doc.id}','rechazado')">Rechazar</button><button class="btn btn-soft btn-sm" onclick="reviewCourier('${doc.id}','pendiente')">Volver a pendiente</button></div></div>`);
+        const uid = d.id;
+        return `<div class="order-card"><div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2"><div><div class="fw-bold">${safe(d.fullName,'Sin nombre')} <span class="${statusClass(st)}">${st}</span></div><div class="small-muted">${safe(d.email)} • ${safe(d.telefono)} • ${safe(d.provincia)} / ${safe(d.ciudad)}</div></div><div class="small-muted">Actualizado: ${formatDate(d.updatedAt || d.createdAt || d.actualizado)}</div></div><div class="small-grid mb-3"><div class="mini-data"><b>Cédula:</b> ${safe(d.cedula)}</div><div class="mini-data"><b>Vehículo:</b> ${safe(d.vehicleType)}</div><div class="mini-data"><b>Placa:</b> ${safe(d.placa)}</div><div class="mini-data"><b>Licencia:</b> ${safe(d.licenseNumber)}</div></div><div class="small-grid mb-3"><div class="mini-data"><b>Cédula:</b> ${d.cedulaDocUrl ? `<a href="${d.cedulaDocUrl}" target="_blank">Abrir</a>` : 'No subida'}</div><div class="mini-data"><b>Licencia:</b> ${d.licenciaDocUrl ? `<a href="${d.licenciaDocUrl}" target="_blank">Abrir</a>` : 'No subida'}</div><div class="mini-data"><b>Récord:</b> ${d.recordDocUrl ? `<a href="${d.recordDocUrl}" target="_blank">Abrir</a>` : 'No subido'}</div></div><textarea id="note-${uid}" class="form-control mb-3" rows="2" placeholder="Nota interna o motivo">${d.reviewNotes || ''}</textarea><div class="d-flex flex-wrap gap-2"><button class="btn btn-success btn-sm" onclick="reviewCourier('${uid}','aprobado')">Aprobar</button><button class="btn btn-outline-danger btn-sm" onclick="reviewCourier('${uid}','rechazado')">Rechazar</button><button class="btn btn-soft btn-sm" onclick="reviewCourier('${uid}','pendiente')">Volver a pendiente</button></div></div>`;
       });
       $('pendingCount').textContent = pending;
       $('approvedCount').textContent = approved;
       list.innerHTML = cards.join('');
+      if (showToast) showMessage('Solicitudes actualizadas.');
     }
-    async function reviewCourier(uid, status){ try{ const approved = status === 'aprobado'; const note = $(`note-${uid}`).value.trim(); await db.collection('usuarios').doc(uid).set({ approvalStatus:status, approvedForDeliveries: approved, reviewNotes:note, reviewedAt:FieldValue.serverTimestamp(), updatedAt:FieldValue.serverTimestamp() }, {merge:true}); await db.collection('repartidores').doc(uid).set({ approvedForDeliveries: approved, approvalStatus: status, reviewNotes: note, updatedAt: FieldValue.serverTimestamp() }, {merge:true}); showMessage('Solicitud actualizada.'); loadRequests(); } catch(err){ showMessage('No se pudo guardar: ' + err.message, 'danger'); } }
+    async function reviewCourier(uid, status){ try{ const approved = status === 'aprobado'; const note = $(`note-${uid}`).value.trim(); await db.collection('usuarios').doc(uid).set({ role:'repartidor', approvalStatus:status, approvedForDeliveries: approved, reviewNotes:note, reviewedAt:FieldValue.serverTimestamp(), updatedAt:FieldValue.serverTimestamp() }, {merge:true}); await db.collection('repartidores').doc(uid).set({ role:'repartidor', approvedForDeliveries: approved, approvalStatus: status, reviewNotes: note, updatedAt: FieldValue.serverTimestamp() }, {merge:true}); showMessage('Solicitud actualizada.'); loadRequests(); } catch(err){ showMessage('No se pudo guardar: ' + err.message, 'danger'); } }
     async function loadOrders(showToast=false){
       const filter = $('orderFilter').value, payment = $('paymentFilter').value;
       const orders = await getPedidosSorted(200);

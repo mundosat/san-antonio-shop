@@ -17,7 +17,7 @@
   <title>San Antonio Shop Ecuador V6</title>
   <meta name="description" content="Mandados y entregas para todo Ecuador con tracking en vivo, ETA y panel profesional." />
 </head>
-<body class="windows-bg">
+<body>
   <div class="container py-4 py-lg-5">
     <div class="brand-badge mb-4">
       <img src="icons/icon-192.png" alt="Logo" />
@@ -45,17 +45,89 @@
           </div>
         </div>
         <div class="col-lg-5">
-          <div class="section-card p-4">
-            <h3 class="fw-bold mb-3">Entrar o registrarte</h3>
-            <input class="input-modern" id="email" type="email" class="form-control mb-3" placeholder="Correo electrónico" />
-            <input class="input-modern" id="password" type="password" class="form-control mb-3" placeholder="Contraseña" />
-            <select id="role" class="form-select mb-3">
-              <option value="cliente">Cliente</option>
-              <option value="repartidor">Repartidor</option>
-            </select>
-            <div class="d-grid gap-2">
-              <button class="btn-modern" class="btn btn-success" onclick="loginUser()">Iniciar sesión</button>
-              <button class="btn-modern" class="btn btn-outline-success" onclick="registerUser()">Crear cuenta</button>
+          <div class="section-card p-4 auth-pro-card">
+            <div class="auth-card-header mb-3">
+              <h3 class="fw-bold mb-1">Entrar o registrarte</h3>
+              <div class="small-muted">Crea la cuenta y, si eliges repartidor, deja la solicitud completa desde una sola pantalla.</div>
+            </div>
+            <div class="grid-2 mb-3">
+              <div>
+                <label class="form-label">Nombre completo</label>
+                <input id="registerFullName" class="form-control" placeholder="Nombre y apellido" />
+              </div>
+              <div>
+                <label class="form-label">Teléfono</label>
+                <input id="registerPhone" type="tel" class="form-control" placeholder="09xxxxxxxx" />
+              </div>
+            </div>
+            <div class="grid-2 mb-3">
+              <div>
+                <label class="form-label">Correo electrónico</label>
+                <input id="email" type="email" class="form-control" placeholder="Correo electrónico" />
+              </div>
+              <div>
+                <label class="form-label">Contraseña</label>
+                <input id="password" type="password" class="form-control" placeholder="Contraseña" />
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Tipo de cuenta</label>
+              <select id="role" class="form-select" onchange="toggleRegisterRoleFields()">
+                <option value="cliente">Cliente</option>
+                <option value="repartidor">Repartidor</option>
+              </select>
+            </div>
+
+            <div id="registerCourierFields" class="register-courier-fields" style="display:none;">
+              <div class="section-subtitle">Solicitud de repartidor</div>
+              <div class="small-muted mb-3">Completa estos datos ahora para que el administrador reciba la solicitud con todo listo.</div>
+              <div class="grid-2 mb-3">
+                <div>
+                  <label class="form-label">Cédula</label>
+                  <input id="registerCedula" class="form-control" placeholder="Cédula" />
+                </div>
+                <div>
+                  <label class="form-label">Vehículo</label>
+                  <select id="registerVehicleType" class="form-select"><option value="moto">Moto</option><option value="carro">Carro</option><option value="bicicleta">Bicicleta</option></select>
+                </div>
+                <div>
+                  <label class="form-label">Provincia</label>
+                  <select id="registerProvincia" class="form-select"></select>
+                </div>
+                <div>
+                  <label class="form-label">Ciudad</label>
+                  <input id="registerCiudad" class="form-control" placeholder="Ciudad" />
+                </div>
+                <div>
+                  <label class="form-label">Placa</label>
+                  <input id="registerPlaca" class="form-control" placeholder="Placa" />
+                </div>
+                <div>
+                  <label class="form-label">Número de licencia</label>
+                  <input id="registerLicenseNumber" class="form-control" placeholder="Número de licencia" />
+                </div>
+                <div>
+                  <label class="form-label">Documento de cédula</label>
+                  <input id="registerCedulaDoc" type="file" class="form-control" accept="image/*,.pdf" />
+                </div>
+                <div>
+                  <label class="form-label">Documento de licencia</label>
+                  <input id="registerLicenciaDoc" type="file" class="form-control" accept="image/*,.pdf" />
+                </div>
+                <div class="grid-span-2">
+                  <label class="form-label">Récord o documento adicional</label>
+                  <input id="registerRecordDoc" type="file" class="form-control" accept="image/*,.pdf" />
+                </div>
+                <div class="grid-span-2">
+                  <label class="form-label">Notas</label>
+                  <textarea id="registerNotes" class="form-control" rows="3" placeholder="Experiencia, horarios, zona de trabajo, observaciones"></textarea>
+                </div>
+              </div>
+            </div>
+
+            <div class="d-grid gap-2 auth-actions">
+              <button class="btn btn-success" onclick="loginUser()">Iniciar sesión</button>
+              <button class="btn btn-outline-success" onclick="registerUser()">Crear cuenta</button>
             </div>
             <div class="small-muted mt-3">Los repartidores quedan en revisión hasta que tú los apruebes desde el panel admin.</div>
           </div>
@@ -73,26 +145,26 @@
                 <div class="small-muted">Sesión: <span id="userEmail"></span></div>
               </div>
               <div class="top-actions">
-                <button class="btn-modern" class="btn btn-soft" onclick="locateUser(true)">Actualizar ubicación</button>
+                <button class="btn btn-soft" onclick="locateUser(true)">Actualizar ubicación</button>
                 <a href="repartidor.html" class="btn btn-soft">Repartidores</a>
                 <a href="admin.html" class="btn btn-soft">Admin</a>
-                <button class="btn-modern" class="btn btn-outline-success" onclick="logoutUser()">Cerrar sesión</button>
+                <button class="btn btn-outline-success" onclick="logoutUser()">Cerrar sesión</button>
               </div>
             </div>
 
             <div class="grid-2 mb-3">
               <div>
                 <label class="form-label">¿Qué necesitas?</label>
-                <textarea class="input-modern" id="pedidoTexto" class="form-control" rows="3" placeholder="Ejemplo: comprar medicinas, retirar comida, llevar paquete, compras del súper..."></textarea>
+                <textarea id="pedidoTexto" class="form-control" rows="3" placeholder="Ejemplo: comprar medicinas, retirar comida, llevar paquete, compras del súper..."></textarea>
               </div>
               <div class="small-grid">
                 <div>
                   <label class="form-label">Valor del mandado</label>
-                  <input class="input-modern" id="valorMandado" type="number" min="0" step="0.01" class="form-control" placeholder="0.00" />
+                  <input id="valorMandado" type="number" min="0" step="0.01" class="form-control" placeholder="0.00" />
                 </div>
                 <div>
                   <label class="form-label">Teléfono</label>
-                  <input class="input-modern" id="clienteTelefono" type="tel" class="form-control" placeholder="09xxxxxxxx" />
+                  <input id="clienteTelefono" type="tel" class="form-control" placeholder="09xxxxxxxx" />
                 </div>
                 <div>
                   <label class="form-label">Provincia</label>
@@ -100,7 +172,7 @@
                 </div>
                 <div>
                   <label class="form-label">Ciudad</label>
-                  <input class="input-modern" id="clienteCiudad" class="form-control" placeholder="Ciudad" />
+                  <input id="clienteCiudad" class="form-control" placeholder="Ciudad" />
                 </div>
               </div>
             </div>
@@ -108,7 +180,7 @@
             <div class="grid-2 mb-3">
               <div>
                 <label class="form-label">Referencia</label>
-                <input class="input-modern" id="clienteReferencia" class="form-control" placeholder="Dirección, barrio, color de casa, punto de encuentro" />
+                <input id="clienteReferencia" class="form-control" placeholder="Dirección, barrio, color de casa, punto de encuentro" />
               </div>
               <div class="grid-2">
                 <div>
@@ -117,7 +189,7 @@
                 </div>
                 <div>
                   <label class="form-label">Banco o referencia</label>
-                  <input class="input-modern" id="referenciaPago" class="form-control" placeholder="Opcional" />
+                  <input id="referenciaPago" class="form-control" placeholder="Opcional" />
                 </div>
               </div>
             </div>
@@ -125,11 +197,11 @@
             <div id="paymentTransferFields" class="grid-2 mb-3" style="display:none;">
               <div>
                 <label class="form-label">Banco</label>
-                <input class="input-modern" id="bancoTransferencia" class="form-control" placeholder="Banco de la transferencia" />
+                <input id="bancoTransferencia" class="form-control" placeholder="Banco de la transferencia" />
               </div>
               <div>
                 <label class="form-label">Comprobante</label>
-                <input class="input-modern" id="comprobantePago" type="file" class="form-control" accept="image/*,.pdf" />
+                <input id="comprobantePago" type="file" class="form-control" accept="image/*,.pdf" />
               </div>
             </div>
 
@@ -143,8 +215,8 @@
             </div>
 
             <div class="top-actions">
-              <button class="btn-modern" class="btn btn-success" onclick="previewPricing()">Calcular costo</button>
-              <button class="btn-modern" class="btn btn-outline-success" onclick="createOrder()">Enviar pedido</button>
+              <button class="btn btn-success" onclick="previewPricing()">Calcular costo</button>
+              <button class="btn btn-outline-success" onclick="createOrder()">Enviar pedido</button>
             </div>
           </div>
 
@@ -157,21 +229,21 @@
               <span id="repartidorBanner" class="small-muted"></span>
             </div>
             <div class="grid-2">
-              <input class="input-modern" id="fullName" class="form-control" placeholder="Nombre completo" />
-              <input class="input-modern" id="cedula" class="form-control" placeholder="Cédula" />
-              <input class="input-modern" id="telefonoRepartidor" class="form-control" placeholder="Teléfono" />
+              <input id="fullName" class="form-control" placeholder="Nombre completo" />
+              <input id="cedula" class="form-control" placeholder="Cédula" />
+              <input id="telefonoRepartidor" class="form-control" placeholder="Teléfono" />
               <select id="provinciaRepartidor" class="form-select"></select>
-              <input class="input-modern" id="ciudadRepartidor" class="form-control" placeholder="Ciudad" />
+              <input id="ciudadRepartidor" class="form-control" placeholder="Ciudad" />
               <select id="vehicleType" class="form-select"><option value="moto">Moto</option><option value="carro">Carro</option><option value="bicicleta">Bicicleta</option></select>
-              <input class="input-modern" id="placa" class="form-control" placeholder="Placa" />
-              <input class="input-modern" id="licenseNumber" class="form-control" placeholder="Número de licencia" />
-              <input class="input-modern" id="cedulaDoc" type="file" class="form-control" accept="image/*,.pdf" />
-              <input class="input-modern" id="licenciaDoc" type="file" class="form-control" accept="image/*,.pdf" />
-              <input class="input-modern" id="recordDoc" type="file" class="form-control" accept="image/*,.pdf" />
-              <textarea class="input-modern" id="notes" class="form-control" rows="3" placeholder="Notas o experiencia"></textarea>
+              <input id="placa" class="form-control" placeholder="Placa" />
+              <input id="licenseNumber" class="form-control" placeholder="Número de licencia" />
+              <input id="cedulaDoc" type="file" class="form-control" accept="image/*,.pdf" />
+              <input id="licenciaDoc" type="file" class="form-control" accept="image/*,.pdf" />
+              <input id="recordDoc" type="file" class="form-control" accept="image/*,.pdf" />
+              <textarea id="notes" class="form-control" rows="3" placeholder="Notas o experiencia"></textarea>
             </div>
             <div class="top-actions mt-3">
-              <button class="btn-modern" class="btn btn-success" onclick="submitCourierApplication()">Enviar solicitud</button>
+              <button class="btn btn-success" onclick="submitCourierApplication()">Enviar solicitud</button>
             </div>
           </div>
 
@@ -182,9 +254,9 @@
                 <div class="small-muted">El pedido sigue visible aunque cierres la app.</div>
               </div>
               <div class="tabs-inline">
-                <button class="btn-modern" class="active" onclick="setOrderFilter('todos', this)">Todos</button>
-                <button class="btn-modern" onclick="setOrderFilter('activos', this)">Activos</button>
-                <button class="btn-modern" onclick="setOrderFilter('historial', this)">Historial</button>
+                <button class="active" onclick="setOrderFilter('todos', this)">Todos</button>
+                <button onclick="setOrderFilter('activos', this)">Activos</button>
+                <button onclick="setOrderFilter('historial', this)">Historial</button>
               </div>
             </div>
             <div id="listaPedidos"></div>
@@ -210,7 +282,7 @@
           <div class="fw-bold">Instalar San Antonio Shop</div>
           <div class="small" style="opacity:.8">Úsala como una app desde tu celular o computadora.</div>
         </div>
-        <button class="btn-modern" class="btn btn-success" onclick="installApp()">Instalar ahora</button>
+        <button class="btn btn-success" onclick="installApp()">Instalar ahora</button>
       </div>
     </div>
   </div>
@@ -246,13 +318,85 @@
         if (showToast) showMessage('Ubicación actualizada.');
       } catch(err) { showMessage('No se pudo obtener la ubicación: ' + err.message, 'warning'); }
     }
+    function toggleRegisterRoleFields(){
+      const show = $('role').value === 'repartidor';
+      const box = $('registerCourierFields');
+      if (box) box.style.display = show ? 'block' : 'none';
+    }
+    function getCourierFormPayload(prefix=''){
+      const fromRegister = prefix === 'register';
+      const fullName = (fromRegister ? $('registerFullName') : $('fullName'))?.value.trim() || '';
+      const telefono = (fromRegister ? $('registerPhone') : $('telefonoRepartidor'))?.value.trim() || '';
+      const provincia = (fromRegister ? $('registerProvincia') : $('provinciaRepartidor'))?.value || '';
+      const ciudad = (fromRegister ? $('registerCiudad') : $('ciudadRepartidor'))?.value.trim() || '';
+      const vehicleType = (fromRegister ? $('registerVehicleType') : $('vehicleType'))?.value || 'moto';
+      return {
+        fullName,
+        telefono,
+        cedula: (fromRegister ? $('registerCedula') : $('cedula'))?.value.trim() || '',
+        provincia,
+        ciudad,
+        vehicleType,
+        placa: (fromRegister ? $('registerPlaca') : $('placa'))?.value.trim() || '',
+        licenseNumber: (fromRegister ? $('registerLicenseNumber') : $('licenseNumber'))?.value.trim() || '',
+        notes: (fromRegister ? $('registerNotes') : $('notes'))?.value.trim() || ''
+      };
+    }
+    async function uploadCourierDocsFor(prefix, uid){
+      const fromRegister = prefix === 'register';
+      return Promise.all([
+        uploadCourierFile((fromRegister ? $('registerCedulaDoc') : $('cedulaDoc'))?.files?.[0], uid, 'cedula'),
+        uploadCourierFile((fromRegister ? $('registerLicenciaDoc') : $('licenciaDoc'))?.files?.[0], uid, 'licencia'),
+        uploadCourierFile((fromRegister ? $('registerRecordDoc') : $('recordDoc'))?.files?.[0], uid, 'record')
+      ]);
+    }
+    async function saveCourierApplication(uid, email, payload, docs={}){
+      const merged = {
+        uid,
+        email: email || '',
+        role:'repartidor',
+        fullName: payload.fullName || '',
+        cedula: payload.cedula || '',
+        telefono: payload.telefono || '',
+        provincia: payload.provincia || '',
+        ciudad: payload.ciudad || '',
+        vehicleType: payload.vehicleType || 'moto',
+        placa: payload.placa || '',
+        licenseNumber: payload.licenseNumber || '',
+        notes: payload.notes || '',
+        approvalStatus:'pendiente',
+        approvedForDeliveries:false,
+        activo:false,
+        updatedAt:FieldValue.serverTimestamp(),
+        createdAt: FieldValue.serverTimestamp(),
+        ...docs
+      };
+      await db.collection('usuarios').doc(uid).set(merged, {merge:true});
+      await db.collection('repartidores').doc(uid).set(merged, {merge:true});
+    }
+
     async function registerUser(){
-      const email = $('email').value.trim(); const password = $('password').value.trim(); const role = $('role').value;
-      if (!email || !password) return showMessage('Completa email y contraseña.', 'warning');
+      const email = $('email').value.trim();
+      const password = $('password').value.trim();
+      const role = $('role').value;
+      const fullName = $('registerFullName').value.trim();
+      const telefono = $('registerPhone').value.trim();
+      if (!email || !password || !fullName) return showMessage('Completa nombre, email y contraseña.', 'warning');
       try {
         const cred = await auth.createUserWithEmailAndPassword(email, password);
-        await saveUserProfile(cred.user, role);
-        showMessage('Usuario registrado correctamente.');
+        if (role === 'repartidor') {
+          const payload = getCourierFormPayload('register');
+          if (!payload.cedula || !payload.telefono || !payload.provincia || !payload.ciudad || !payload.licenseNumber) {
+            throw new Error('Completa todos los datos del repartidor antes de crear la cuenta.');
+          }
+          const [cedulaDocUrl, licenciaDocUrl, recordDocUrl] = await uploadCourierDocsFor('register', cred.user.uid);
+          await saveUserProfile(cred.user, role, { fullName, telefono, provincia: payload.provincia, ciudad: payload.ciudad });
+          await saveCourierApplication(cred.user.uid, cred.user.email, {...payload, fullName, telefono}, { cedulaDocUrl, licenciaDocUrl, recordDocUrl });
+          showMessage('Cuenta creada. La solicitud de repartidor quedó enviada y lista para revisión.');
+        } else {
+          await saveUserProfile(cred.user, role, { fullName, telefono });
+          showMessage('Usuario registrado correctamente.');
+        }
       } catch(err) { showMessage('Error al registrar: ' + err.message, 'danger'); }
     }
     async function loginUser(){
@@ -264,19 +408,16 @@
     async function submitCourierApplication(){
       if (!appUser) return showMessage('Debes iniciar sesión.', 'warning');
       try {
-        const [cedulaDocUrl, licenciaDocUrl, recordDocUrl] = await Promise.all([
-          uploadCourierFile($('cedulaDoc').files[0], appUser.uid, 'cedula'),
-          uploadCourierFile($('licenciaDoc').files[0], appUser.uid, 'licencia'),
-          uploadCourierFile($('recordDoc').files[0], appUser.uid, 'record')
-        ]);
-        await db.collection('usuarios').doc(appUser.uid).set({
-          role:'repartidor',
-          fullName:$('fullName').value.trim(), cedula:$('cedula').value.trim(), telefono:$('telefonoRepartidor').value.trim(),
-          provincia:$('provinciaRepartidor').value, ciudad:$('ciudadRepartidor').value.trim(), vehicleType:$('vehicleType').value,
-          placa:$('placa').value.trim(), licenseNumber:$('licenseNumber').value.trim(), notes:$('notes').value.trim(),
-          cedulaDocUrl, licenciaDocUrl, recordDocUrl, approvalStatus:'pendiente', approvedForDeliveries:false,
-          updatedAt:FieldValue.serverTimestamp()
-        }, {merge:true});
+        const payload = getCourierFormPayload();
+        if (!payload.fullName || !payload.cedula || !payload.telefono || !payload.provincia || !payload.ciudad || !payload.licenseNumber) {
+          return showMessage('Completa todos los datos obligatorios de la solicitud.', 'warning');
+        }
+        const [cedulaDocUrl, licenciaDocUrl, recordDocUrl] = await uploadCourierDocsFor('', appUser.uid);
+        await saveCourierApplication(appUser.uid, appUser.email, payload, {
+          ...(cedulaDocUrl ? {cedulaDocUrl} : {}),
+          ...(licenciaDocUrl ? {licenciaDocUrl} : {}),
+          ...(recordDocUrl ? {recordDocUrl} : {})
+        });
         showMessage('Solicitud enviada. Ahora debes esperar aprobación del administrador.');
       } catch(err) { showMessage('No se pudieron subir los documentos: ' + err.message, 'danger'); }
     }
@@ -410,10 +551,10 @@ async function getDistanceAndPrice(){
           <div class="fw-bold mb-2">Califica a tu repartidor</div>
           <div class="small-muted mb-3">Pedido: ${safe(order.texto)}</div>
           <div class="rating-stars mb-3">
-            ${[1,2,3,4,5].map(n => `<button class="btn-modern" id="star-${n}" onclick="setRatingStar(${n})">⭐ ${n}</button>`).join('')}
+            ${[1,2,3,4,5].map(n => `<button id="star-${n}" onclick="setRatingStar(${n})">⭐ ${n}</button>`).join('')}
           </div>
-          <textarea class="input-modern" id="ratingComment" class="form-control mb-3" rows="3" placeholder="Comentario opcional"></textarea>
-          <button class="btn-modern" class="btn btn-success" onclick="submitRating()">Guardar calificación</button>
+          <textarea id="ratingComment" class="form-control mb-3" rows="3" placeholder="Comentario opcional"></textarea>
+          <button class="btn btn-success" onclick="submitRating()">Guardar calificación</button>
         </div>`;
     }
     let selectedStars = 0;
@@ -450,9 +591,9 @@ async function getDistanceAndPrice(){
         const courier = d.repartidorEmail ? `<div class="small-muted mt-1">Repartidor: ${safe(d.repartidorEmail)}</div>` : '';
         const payment = `<div class="d-flex gap-2 flex-wrap mt-2"><span class="${paymentStatusClass(d.estadoPago || 'pendiente')}">${paymentStatusLabel(d.estadoPago || 'pendiente')}</span><span class="badge-chip">${safe(d.metodoPago).replace(/_/g,' ')}</span></div>`;
         const pricing = `<div class="small-grid mt-3"><div class="mini-data"><b>Mandado:</b> ${currency(d.valorMandado || 0)}</div><div class="mini-data"><b>Envío:</b> ${currency(d.costoEnvio || 0)}</div><div class="mini-data"><b>Total:</b> ${currency(d.total || 0)}</div><div class="mini-data"><b>Distancia:</b> ${asNumber(d.distanciaKm,0).toFixed(1)} km</div><div class="mini-data"><b>ETA:</b> ${safe(d.tiempoEstimadoMin,'—')} min</div></div>`;
-        const actions = [`<button class="btn-modern" class="btn btn-soft btn-sm" onclick="focusOrder(${d.lat}, ${d.lng})">Ver en mapa</button>`,`<a class="btn btn-outline-success btn-sm" target="_blank" href="https://www.google.com/maps?q=${d.lat},${d.lng}">Abrir Maps</a>`];
-        if (['pendiente','aceptado'].includes(d.estado)) actions.unshift(`<button class="btn-modern" class="btn btn-outline-danger btn-sm" onclick="cancelOrder('${d.id}','${d.estado}')">Cancelar</button>`);
-        if (d.repartidorId && ['aceptado','en_camino'].includes(d.estado)) actions.unshift(`<button class="btn-modern" class="btn btn-success btn-sm" onclick="subscribeToCourierById('${d.id}')">Seguir pedido</button>`);
+        const actions = [`<button class="btn btn-soft btn-sm" onclick="focusOrder(${d.lat}, ${d.lng})">Ver en mapa</button>`,`<a class="btn btn-outline-success btn-sm" target="_blank" href="https://www.google.com/maps?q=${d.lat},${d.lng}">Abrir Maps</a>`];
+        if (['pendiente','aceptado'].includes(d.estado)) actions.unshift(`<button class="btn btn-outline-danger btn-sm" onclick="cancelOrder('${d.id}','${d.estado}')">Cancelar</button>`);
+        if (d.repartidorId && ['aceptado','en_camino'].includes(d.estado)) actions.unshift(`<button class="btn btn-success btn-sm" onclick="subscribeToCourierById('${d.id}')">Seguir pedido</button>`);
         html += `<div class="order-card"><div class="d-flex justify-content-between align-items-start gap-2 flex-wrap"><div><div class="fw-bold">${safe(d.texto,'Pedido sin detalle')}</div><div class="small-muted">${safe(d.referencia,'Sin referencia adicional')}</div></div><div class="d-flex gap-2 align-items-center"><span class="${statusClass(d.estado)}">${orderStatusLabel(d.estado)}</span>${orderAgingLabel(d)}</div></div><div class="small-muted mt-2">${safe(d.provincia,'')}${d.ciudad ? ' • ' + d.ciudad : ''}</div><div class="small-muted">Creado: ${formatDate(d.createdAt)}</div>${courier}${payment}${pricing}<div class="top-actions mt-3">${actions.join('')}</div></div>`;
       });
       list.innerHTML = html;
@@ -467,6 +608,7 @@ async function getDistanceAndPrice(){
       appUser = user; appProfile = profile || {role:'cliente'};
       fillProvinceSelect('clienteProvincia', profile?.provincia || '');
       fillProvinceSelect('provinciaRepartidor', profile?.provincia || '');
+      fillProvinceSelect('registerProvincia', profile?.provincia || '');
       fillPaymentSelect('metodoPago');
       toggleTransferFields();
       $('metodoPago').addEventListener('change', toggleTransferFields);
@@ -478,14 +620,15 @@ async function getDistanceAndPrice(){
         const status = profile?.approvalStatus || 'pendiente';
         $('repartidorBanner').innerHTML = status === 'aprobado' ? 'Tu perfil de repartidor ya está <b>aprobado</b>. Puedes abrir el <a href="repartidor.html">panel de repartidores</a>.' : `Tu perfil de repartidor está <b>${status}</b>. Puedes completar o corregir tus datos mientras esperas revisión.`;
       } else { $('courierApplicationCard').style.display = 'none'; $('repartidorBanner').innerHTML = ''; }
-      if (profile?.fullName) $('fullName').value = profile.fullName;
-      if (profile?.cedula) $('cedula').value = profile.cedula;
-      if (profile?.telefono) { $('telefonoRepartidor').value = profile.telefono; $('clienteTelefono').value = profile.telefono; }
-      if (profile?.ciudad) { $('ciudadRepartidor').value = profile.ciudad; $('clienteCiudad').value = profile.ciudad; }
-      if (profile?.vehicleType) $('vehicleType').value = profile.vehicleType;
-      if (profile?.placa) $('placa').value = profile.placa;
-      if (profile?.licenseNumber) $('licenseNumber').value = profile.licenseNumber;
-      if (profile?.notes) $('notes').value = profile.notes;
+      if (profile?.fullName) { $('fullName').value = profile.fullName; $('registerFullName').value = profile.fullName; }
+      if (profile?.cedula) { $('cedula').value = profile.cedula; $('registerCedula').value = profile.cedula; }
+      if (profile?.telefono) { $('telefonoRepartidor').value = profile.telefono; $('clienteTelefono').value = profile.telefono; $('registerPhone').value = profile.telefono; }
+      if (profile?.provincia) $('registerProvincia').value = profile.provincia;
+      if (profile?.ciudad) { $('ciudadRepartidor').value = profile.ciudad; $('clienteCiudad').value = profile.ciudad; $('registerCiudad').value = profile.ciudad; }
+      if (profile?.vehicleType) { $('vehicleType').value = profile.vehicleType; $('registerVehicleType').value = profile.vehicleType; }
+      if (profile?.placa) { $('placa').value = profile.placa; $('registerPlaca').value = profile.placa; }
+      if (profile?.licenseNumber) { $('licenseNumber').value = profile.licenseNumber; $('registerLicenseNumber').value = profile.licenseNumber; }
+      if (profile?.notes) { $('notes').value = profile.notes; $('registerNotes').value = profile.notes; }
       setupOrdersListener();
       if (cleanupTimer) clearInterval(cleanupTimer); cleanupTimer = scheduleCleanup();
     }
@@ -494,6 +637,7 @@ async function getDistanceAndPrice(){
       const profile = await getUserProfile(user.uid);
       startCustomerApp(user, profile || {role:'cliente'});
     });
+    window.addEventListener('load', () => { fillProvinceSelect('registerProvincia'); toggleRegisterRoleFields(); });
   </script>
 </body>
 </html>
