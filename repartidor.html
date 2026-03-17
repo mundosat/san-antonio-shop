@@ -14,20 +14,62 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
-  <title>San Antonio Shop | Repartidores V5</title>
+  <title>San Antonio Shop | Repartidores</title>
 </head>
 <body>
   <div class="container py-4 py-lg-5">
     <div class="brand-badge mb-4">
       <img src="icons/icon-192.png" alt="Logo" />
-      <div><div class="fw-bold">San Antonio Shop</div><div class="small-muted">Panel V5 de repartidores</div></div>
+      <div><div class="fw-bold">San Antonio Shop</div><div class="small-muted">App de repartidores</div></div>
     </div>
     <div id="statusMessage" class="alert alert-success" style="display:none;"></div>
 
     <section id="authSection" class="hero-card p-3 p-lg-4 mb-4">
-      <div class="row g-4 align-items-center">
-        <div class="col-lg-7"><div class="hero-panel"><h1>Solo repartidores aprobados pueden tomar pedidos.</h1><p>Ubicación en vivo, ruta automática gratis, estados de entrega y contacto rápido con el cliente.</p><div><span class="feature-chip">🚚 Aceptar pedidos</span><span class="feature-chip">📍 Ruta tipo Uber</span><span class="feature-chip">💬 WhatsApp al cliente</span><span class="feature-chip">⭐ Tu promedio visible en admin</span></div></div></div>
-        <div class="col-lg-5"><div class="section-card p-4"><h3 class="fw-bold mb-3">Entrar</h3><input id="email" type="email" class="form-control mb-3" placeholder="Correo electrónico" /><input id="password" type="password" class="form-control mb-3" placeholder="Contraseña" /><div class="d-grid gap-2"><button class="btn btn-success" onclick="loginUser()">Iniciar sesión</button><a href="index.html" class="btn btn-outline-success">Ir a clientes</a></div><div class="small-muted mt-3">Si todavía no estás aprobado, entra en la página principal y completa tu solicitud.</div></div></div>
+      <div class="row g-4 align-items-stretch">
+        <div class="col-lg-6"><div class="hero-panel premium-hero h-100"><div class="hero-kicker">Repartidores</div><h1>Inicia sesión o solicita tu aprobación.</h1><p>Esta app queda separada de clientes. Solo repartidores aprobados pueden ver y tomar pedidos activos.</p><div class="premium-feature-list"><div class="premium-feature"><i class="bi bi-truck"></i><span>Pedidos cerca de ti</span></div><div class="premium-feature"><i class="bi bi-geo-alt-fill"></i><span>Ubicación en vivo</span></div><div class="premium-feature"><i class="bi bi-map"></i><span>Ruta automática</span></div><div class="premium-feature"><i class="bi bi-shield-check"></i><span>Aprobación por admin</span></div></div><div class="mt-4"><a href="index.html" class="btn btn-outline-success">Ir a clientes</a></div></div></div>
+        <div class="col-lg-6">
+          <div class="section-card p-0 auth-card-premium overflow-hidden">
+            <div class="auth-card-head"><div><div class="auth-overline">Acceso repartidores</div><h3 class="fw-bold mb-1">Entrar o solicitar cuenta</h3><div class="small-muted">Todo el flujo del repartidor ahora vive aquí.</div></div><div class="auth-glow"></div></div>
+            <div class="auth-tabs-wrap px-4 pt-2">
+              <button id="tabLogin" class="auth-tab active" type="button" onclick="setAuthMode('login')">Iniciar sesión</button>
+              <button id="tabRegister" class="auth-tab" type="button" onclick="setAuthMode('register')">Solicitar cuenta</button>
+            </div>
+            <div class="auth-forms-shell px-4 pb-4">
+              <div id="loginBox" class="auth-pane active">
+                <div class="auth-pane-title">Entrar</div>
+                <div class="auth-pane-subtitle">Usa el correo del repartidor aprobado.</div>
+                <input id="email" type="email" class="form-control mb-3" placeholder="Correo electrónico" />
+                <input id="password" type="password" class="form-control mb-3" placeholder="Contraseña" />
+                <div class="d-grid gap-2"><button class="btn btn-success" onclick="loginUser()">Iniciar sesión</button></div>
+              </div>
+              <div id="registroBox" class="auth-pane">
+                <div class="auth-pane-title">Solicitud de repartidor</div>
+                <div class="auth-pane-subtitle">Esta solicitud queda pendiente hasta aprobación del administrador.</div>
+                <input id="registerName" class="form-control mb-3" placeholder="Nombre completo" />
+                <input id="registerPhone" class="form-control mb-3" placeholder="Teléfono" />
+                <input id="regEmail" type="email" class="form-control mb-3" placeholder="Correo electrónico" />
+                <input id="regPassword" type="password" class="form-control mb-3" placeholder="Contraseña" />
+                <div class="grid-2 mb-3">
+                  <select id="registerProvince" class="form-select"></select>
+                  <input id="registerCity" class="form-control" placeholder="Ciudad" />
+                </div>
+                <div class="grid-2 mb-3">
+                  <input id="registerCedula" class="form-control" placeholder="Cédula" />
+                  <select id="registerVehicleType" class="form-select"><option value="moto">Moto</option><option value="carro">Carro</option><option value="bicicleta">Bicicleta</option></select>
+                  <input id="registerPlaca" class="form-control" placeholder="Placa" />
+                  <input id="registerLicenseNumber" class="form-control" placeholder="Número de licencia" />
+                </div>
+                <div class="grid-2 mb-3">
+                  <input id="registerCedulaDoc" type="file" class="form-control" accept="image/*,.pdf" />
+                  <input id="registerLicenciaDoc" type="file" class="form-control" accept="image/*,.pdf" />
+                  <input id="registerRecordDoc" type="file" class="form-control" accept="image/*,.pdf" />
+                  <textarea id="registerNotes" class="form-control" rows="2" placeholder="Notas o experiencia"></textarea>
+                </div>
+                <div class="d-grid gap-2"><button class="btn btn-success" onclick="registerCourier()">Enviar solicitud</button></div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -36,20 +78,11 @@
       <div id="courierPanel">
         <div class="row g-4">
           <div class="col-lg-4">
-            <div class="section-card p-3 p-lg-4 mb-4">
-              <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <div><h3 class="fw-bold mb-1">Repartidor</h3><div class="small-muted"><span id="userEmail"></span> • <span id="userRole"></span></div></div>
-                <button class="btn btn-outline-success" onclick="logoutUser()">Cerrar sesión</button>
-              </div>
-            </div>
-            <div class="summary-list mb-4">
-              <div class="stat"><div class="small-muted mb-1">Pedidos activos</div><h5 id="activosCount">0</h5></div>
-              <div class="stat"><div class="small-muted mb-1">Tomados por mí</div><h5 id="miosCount">0</h5></div>
-              <div class="stat"><div class="small-muted mb-1">Mi promedio</div><h5 id="ratingAvg">0.0</h5></div>
-            </div>
+            <div class="section-card p-3 p-lg-4 mb-4"><div class="d-flex justify-content-between align-items-center flex-wrap gap-2"><div><h3 class="fw-bold mb-1">Repartidor</h3><div class="small-muted"><span id="userEmail"></span> • <span id="userRole"></span></div></div><button class="btn btn-outline-success" onclick="logoutUser()">Cerrar sesión</button></div></div>
+            <div class="summary-list mb-4"><div class="stat"><div class="small-muted mb-1">Pedidos activos</div><h5 id="activosCount">0</h5></div><div class="stat"><div class="small-muted mb-1">Tomados por mí</div><h5 id="miosCount">0</h5></div><div class="stat"><div class="small-muted mb-1">Mi promedio</div><h5 id="ratingAvg">0.0</h5></div></div>
             <div class="section-card p-3 p-lg-4"><div class="d-flex justify-content-between align-items-center mb-3"><h4 class="fw-bold mb-0">Pedidos</h4><div class="d-flex gap-2 flex-wrap"><a href="index.html" class="btn btn-outline-success btn-sm">Cliente</a><a href="admin.html" class="btn btn-soft btn-sm">Admin</a></div></div><div id="listaPedidos"></div></div>
           </div>
-          <div class="col-lg-8"><div class="section-card p-3 p-lg-4"><h4 class="fw-bold mb-3">Mapa de entregas</h4><div id="map" class="map-box"></div><p class="footer-note mt-3 mb-0">La ruta se dibuja gratis con OpenStreetMap + OSRM. El cliente verá tu movimiento si tomas el pedido.</p></div></div>
+          <div class="col-lg-8"><div class="section-card p-3 p-lg-4"><h4 class="fw-bold mb-3">Mapa de entregas</h4><div id="map" class="map-box"></div><p class="footer-note mt-3 mb-0">La ruta se dibuja con OpenStreetMap + OSRM. El cliente verá tu movimiento cuando tomes el pedido.</p></div></div>
         </div>
       </div>
     </section>
@@ -64,6 +97,7 @@
     const DEFAULT_CITY_CENTER = [-2.9006,-79.0045];
     let appUser = null, appProfile = null, courierMap, pedidosLayer, repartidorLayer, routingControl, ordersUnsubscribe = null, couriersUnsubscribe = null, watchId = null, myMarker = null, myLatLng = null, cleanupTimer = null, seenPendingIds = new Set(), selectedOrderId = null;
 
+    function setAuthMode(mode){ const loginMode = mode !== 'register'; $('loginBox').classList.toggle('active', loginMode); $('registroBox').classList.toggle('active', !loginMode); $('tabLogin').classList.toggle('active', loginMode); $('tabRegister').classList.toggle('active', !loginMode); }
     function normalizeStatus(value, fallback='pendiente'){ return String(value || fallback).toLowerCase().trim(); }
     function canCourierSeeOrder(d={}){
       const estado = normalizeStatus(d.estado);
@@ -73,279 +107,55 @@
       if (!myLatLng || !d.lat || !d.lng) return false;
       return haversineKm(myLatLng[0], myLatLng[1], Number(d.lat), Number(d.lng)) <= MAX_ORDER_RADIUS_KM;
     }
-    function initCourierMap(){
-      if (courierMap) return;
-      courierMap = L.map('map').setView(DEFAULT_CITY_CENTER,13);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19, attribution:'&copy; OpenStreetMap'}).addTo(courierMap);
-      pedidosLayer = L.layerGroup().addTo(courierMap);
-      repartidorLayer = L.layerGroup().addTo(courierMap);
+    function initCourierMap(){ if (courierMap) return; courierMap = L.map('map').setView(DEFAULT_CITY_CENTER,13); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19, attribution:'&copy; OpenStreetMap'}).addTo(courierMap); pedidosLayer = L.layerGroup().addTo(courierMap); repartidorLayer = L.layerGroup().addTo(courierMap); }
+    async function registerCourier(){
+      const email = $('regEmail').value.trim();
+      const password = $('regPassword').value.trim();
+      const fullName = $('registerName').value.trim();
+      const telefono = $('registerPhone').value.trim();
+      const provincia = $('registerProvince').value.trim();
+      const ciudad = $('registerCity').value.trim();
+      const cedula = $('registerCedula').value.trim();
+      const licenseNumber = $('registerLicenseNumber').value.trim();
+      if (!email || !password || !fullName || !telefono || !cedula || !licenseNumber) return showMessage('Completa los datos principales del repartidor.', 'warning');
+      try {
+        const cred = await auth.createUserWithEmailAndPassword(email, password);
+        const [cedulaDocUrl, licenciaDocUrl, recordDocUrl] = await Promise.all([
+          uploadCourierFile($('registerCedulaDoc').files[0], cred.user.uid, 'cedula'),
+          uploadCourierFile($('registerLicenciaDoc').files[0], cred.user.uid, 'licencia'),
+          uploadCourierFile($('registerRecordDoc').files[0], cred.user.uid, 'record')
+        ]);
+        const extra = {
+          fullName, telefono, provincia, ciudad, cedula,
+          vehicleType: $('registerVehicleType').value,
+          placa: $('registerPlaca').value.trim(),
+          licenseNumber,
+          notes: $('registerNotes').value.trim(),
+          cedulaDocUrl, licenciaDocUrl, recordDocUrl,
+          approvalStatus: 'pendiente', approvedForDeliveries: false
+        };
+        await saveUserProfile(cred.user, 'repartidor', extra);
+        await saveCourierMirror(cred.user.uid, {email: cred.user.email || '', createdAt: FieldValue.serverTimestamp(), ...extra});
+        showMessage('Solicitud enviada. Quedó pendiente para revisión del administrador.');
+      } catch(err) { showMessage('Error al registrar: ' + err.message, 'danger'); }
     }
-    async function loginUser(){
-      const email = $('email').value.trim(), password = $('password').value.trim();
-      if (!email || !password) return showMessage('Completa email y contraseña.', 'warning');
-      try{ await auth.signInWithEmailAndPassword(email, password); }catch(err){ showMessage('Error al iniciar sesión: ' + err.message, 'danger'); }
-    }
-    async function logoutUser(){
-      try{ if (watchId) navigator.geolocation.clearWatch(watchId); }catch{}
-      if (appUser) await db.collection('repartidores').doc(appUser.uid).set({activo:false, actualizado:FieldValue.serverTimestamp()},{merge:true}).catch(()=>{});
-      await auth.signOut();
-      location.reload();
-    }
-    async function persistCourierLocation(lat, lng){
-      if (!appUser) return;
-      await db.collection('repartidores').doc(appUser.uid).set({
-        uid:appUser.uid,
-        email:appUser.email || '',
-        nombre: appProfile?.fullName || appProfile?.nombre || '',
-        vehiculo: appProfile?.vehicleType || appProfile?.vehiculo || '',
-        vehicleType: appProfile?.vehicleType || appProfile?.vehiculo || '',
-        lat, lng,
-        activo:true,
-        actualizado:FieldValue.serverTimestamp(),
-        approvalStatus: appProfile?.approvalStatus || 'aprobado',
-        approvedForDeliveries: appProfile?.approvedForDeliveries === true,
-        aprobado: appProfile?.approvedForDeliveries === true,
-        estado: appProfile?.approvedForDeliveries ? 'aprobado' : (appProfile?.approvalStatus || 'pendiente')
-      },{merge:true});
-    }
-    function startLiveLocation(){
-      if (!navigator.geolocation || !appUser) return;
-      watchId = navigator.geolocation.watchPosition(async pos => {
-        myLatLng = [pos.coords.latitude, pos.coords.longitude];
-        initCourierMap();
-        if (myMarker) courierMap.removeLayer(myMarker);
-        myMarker = L.marker(myLatLng).addTo(courierMap).bindPopup('Tu ubicación');
-        await persistCourierLocation(pos.coords.latitude, pos.coords.longitude);
-        renderNearbyHint();
-      }, err => console.warn(err), {enableHighAccuracy:true, timeout:15000, maximumAge:4000});
-    }
-    function renderNearbyHint(){
-      const box = $('statusMessage');
-      if (!myLatLng || !box || box.style.display === 'block') return;
-      box.className = 'alert alert-info';
-      box.innerHTML = `Buscando pedidos en un radio de <b>${MAX_ORDER_RADIUS_KM} km</b> alrededor de tu ubicación.`;
-      box.style.display = 'block';
-      clearTimeout(showMessage._t);
-      showMessage._t = setTimeout(()=>{ if (box.classList.contains('alert-info')) box.style.display='none'; }, 3500);
-    }
-    function drawRouteTo(lat, lng){
-      initCourierMap();
-      if (!myLatLng) return showMessage('Activa tu ubicación para ver la ruta.', 'warning');
-      if (routingControl) courierMap.removeControl(routingControl);
-      routingControl = L.Routing.control({
-        waypoints:[L.latLng(myLatLng[0], myLatLng[1]), L.latLng(lat,lng)],
-        router:L.Routing.osrmv1({ serviceUrl:'https://router.project-osrm.org/route/v1' }),
-        show:false,
-        addWaypoints:false,
-        routeWhileDragging:false,
-        lineOptions:{styles:[{color:'#1ca358',opacity:0.9,weight:6}]},
-        createMarker:(i, wp)=> i===0 ? L.marker(wp.latLng, {title:'Tú'}) : L.marker(wp.latLng, {title:'Entrega'})
-      }).addTo(courierMap);
-    }
-    async function openNavigation(id){
-      const doc = await db.collection('pedidos').doc(id).get();
-      const d = doc.data() || {};
-      if (!d.lat || !d.lng) return showMessage('Este pedido no tiene ubicación disponible.', 'warning');
-      drawRouteTo(Number(d.lat), Number(d.lng));
-      if (!myLatLng) return;
-      const url = `https://www.google.com/maps/dir/?api=1&origin=${myLatLng[0]},${myLatLng[1]}&destination=${d.lat},${d.lng}&travelmode=driving`;
-      window.open(url, '_blank');
-    }
-    function renderCouriers(snapshot){
-      repartidorLayer.clearLayers();
-      snapshot.forEach(doc => {
-        const d=doc.data();
-        if (!d.lat || !d.lng || !d.activo) return;
-        L.circleMarker([d.lat,d.lng], {radius:d.uid===appUser.uid?10:7,color:'#0f7d40',fillColor:d.uid===appUser.uid?'#1ca358':'#7bd39a',fillOpacity:1})
-          .addTo(repartidorLayer)
-          .bindPopup(d.uid===appUser.uid?'Tú':safe(d.nombre || d.email,'Repartidor'));
-      });
-    }
-    function orderButtons(id,d){
-      const mine = d.repartidorId === appUser.uid;
-      const wa = d.clienteTelefono ? `<a class="btn btn-outline-success btn-sm" target="_blank" href="https://wa.me/${cleanPhone(d.clienteTelefono)}?text=${encodeURIComponent('Hola, soy tu repartidor de San Antonio Shop. Estoy en camino con tu pedido.')}">WhatsApp</a>` : '';
-      const routeBtn = `<button class="btn btn-soft btn-sm" onclick="openNavigation('${id}')">Ruta</button>`;
-      return `<div class="top-actions mt-3">${d.estado==='pendiente' ? `<button class="btn btn-success btn-sm" onclick="acceptOrder('${id}')">Aceptar</button>` : ''}${mine && d.estado==='aceptado' ? `<button class="btn btn-soft btn-sm" onclick="updateOrderStatus('${id}','en_camino')">En camino</button>` : ''}${mine && d.estado==='en_camino' ? `<button class="btn btn-soft btn-sm" onclick="updateOrderStatus('${id}','entregado')">Entregado</button>` : ''}${mine && ['aceptado','en_camino'].includes(d.estado) ? `<button class="btn btn-outline-danger btn-sm" onclick="updateOrderStatus('${id}','cancelado')">Cancelar</button>` : ''}${routeBtn}${wa}</div>`;
-    }
-    function renderOrders(snapshot){
-      initCourierMap();
-      pedidosLayer.clearLayers();
-      let activos=0,mios=0, visibles=0;
-      if (snapshot.empty) {
-        $('listaPedidos').innerHTML='<div class="empty-state">No hay pedidos disponibles por ahora.</div>';
-        $('activosCount').textContent='0';
-        $('miosCount').textContent='0';
-        return;
-      }
-      let html='';
-      snapshot.docs.forEach(doc => {
-        const d={...(doc.data()||{})};
-        d.estado = normalizeStatus(d.estado);
-        if (!ORDER_STATUSES.includes(d.estado)) return;
-        if (!canCourierSeeOrder(d)) return;
-        visibles++;
-        if (!['entregado','cancelado'].includes(d.estado)) activos++;
-        if (d.repartidorId === appUser.uid) mios++;
-        let kmText = '—';
-        if (myLatLng && d.lat && d.lng){
-          const km = haversineKm(myLatLng[0], myLatLng[1], Number(d.lat), Number(d.lng));
-          kmText = `${km.toFixed(1)} km`;
-        }
-        if (d.lat && d.lng){
-          const marker = L.marker([d.lat,d.lng]).addTo(pedidosLayer).bindPopup(`<b>${safe(d.texto)}</b><br>${safe(d.ciudad)}<br>${currency(d.total || 0)}`);
-          if (selectedOrderId === doc.id){ marker.openPopup(); drawRouteTo(Number(d.lat), Number(d.lng)); }
-        }
-        if (d.estado==='pendiente' && !seenPendingIds.has(doc.id)) {
-          browserNotify('Nuevo pedido cerca de ti', `${safe(d.texto,'Hay un pedido')} · ${kmText}`);
-          seenPendingIds.add(doc.id);
-        }
-        html += `<div class="order-card" onclick="focusOrder('${doc.id}', ${Number(d.lat || 0)}, ${Number(d.lng || 0)})"><div class="d-flex justify-content-between align-items-start gap-2 flex-wrap"><div><div class="fw-bold">${safe(d.texto)}</div><div class="small-muted">${safe(d.provincia)} • ${safe(d.ciudad)}</div></div><div class="d-flex gap-2 flex-wrap"><span class="${statusClass(d.estado)}">${orderStatusLabel(d.estado)}</span><span class="badge-chip">${kmText}</span></div></div><div class="small-grid mt-3"><div class="mini-data"><b>Total:</b> ${currency(d.total || 0)}</div><div class="mini-data"><b>Envío:</b> ${currency(d.costoEnvio || 0)}</div><div class="mini-data"><b>Pago:</b> ${safe(d.metodoPago).replace(/_/g,' ')}</div><div class="mini-data"><b>Cliente:</b> ${safe(d.clienteEmail)}</div><div class="mini-data"><b>ETA:</b> ${safe(d.tiempoEstimadoMin,'—')} min</div></div>${orderButtons(doc.id,d)}</div>`;
-      });
-      $('listaPedidos').innerHTML = visibles ? html : '<div class="empty-state">No hay pedidos cerca de tu ubicación en este momento.</div>';
-      $('activosCount').textContent = String(activos);
-      $('miosCount').textContent = String(mios);
-      const layers = [];
-      if (myMarker) layers.push(myMarker);
-      pedidosLayer.eachLayer(l=>layers.push(l));
-      if (layers.length) courierMap.fitBounds(L.featureGroup(layers).getBounds().pad(0.18));
-    }
-    function focusOrder(id, lat, lng){
-      selectedOrderId = id;
-      if (lat && lng) drawRouteTo(lat,lng);
-    }
-    async function acceptOrder(id){
-      if (!appProfile?.approvedForDeliveries) return showMessage('Tu perfil todavía no está aprobado.', 'warning');
-      try{
-        const ref = db.collection('pedidos').doc(id);
-        await db.runTransaction(async tx => {
-          const snap = await tx.get(ref);
-          if (!snap.exists) throw new Error('El pedido ya no existe.');
-          const d = snap.data() || {};
-          const estado = normalizeStatus(d.estado);
-          if (estado !== 'pendiente') throw new Error('Este pedido ya fue tomado por otro repartidor.');
-          if (!myLatLng) throw new Error('Activa tu ubicación antes de aceptar pedidos.');
-          const distanceKm = d.lat && d.lng ? haversineKm(myLatLng[0], myLatLng[1], Number(d.lat), Number(d.lng)) : 9999;
-          if (distanceKm > MAX_ORDER_RADIUS_KM) throw new Error(`Este pedido está fuera de tu radio de ${MAX_ORDER_RADIUS_KM} km.`);
-          tx.update(ref, {
-            estado:'aceptado',
-            repartidorId:appUser.uid,
-            repartidorEmail:appUser.email || '',
-            courierLat: myLatLng[0],
-            courierLng: myLatLng[1],
-            ultimaActualizacion:FieldValue.serverTimestamp(),
-            tiempoEstimadoMin: estimateEtaMinutes(distanceKm, 'aceptado')
-          });
-        });
-        showMessage('Pedido aceptado. Ya puedes seguir la ruta.');
-      }catch(err){ showMessage('No se pudo aceptar: ' + err.message, 'danger'); }
-    }
-    async function updateOrderStatus(id,status){
-      try{
-        const ref = db.collection('pedidos').doc(id);
-        const snap = await ref.get();
-        if (!snap.exists) throw new Error('El pedido ya no existe.');
-        const current = snap.data() || {};
-        const payload = { estado:status, ultimaActualizacion:FieldValue.serverTimestamp() };
-        if (status === 'en_camino' && myLatLng){
-          payload.courierLat = myLatLng[0];
-          payload.courierLng = myLatLng[1];
-        }
-        if (status === 'entregado') {
-          payload.estadoPago = 'pagado';
-          payload.courierRatingPending = true;
-          payload.deliveredAt = FieldValue.serverTimestamp();
-          await ref.update(payload);
-          await archiveOrder({ id, data:()=>({ ...current, ...payload }) });
-          await ref.delete();
-          showMessage('Pedido entregado y retirado automáticamente de la base activa.');
-          return;
-        }
-        if (status === 'cancelado') payload.canceladoPor = 'repartidor';
-        await ref.update(payload);
-        showMessage('Estado actualizado.');
-      }catch(err){ showMessage('No se pudo actualizar: ' + err.message, 'danger'); }
-    }
-    async function loadMyRating(){
-      if (!appUser) return;
-      const snap = await db.collection('calificaciones').where('repartidorId','==',appUser.uid).get();
-      const avg = averageRating(snap.docs.map(doc=>doc.data()));
-      $('ratingAvg').textContent = avg.toFixed(1);
-    }
-    async function startCourierApp(user, profile){
-      appUser = user; appProfile = profile || {};
-      $('authSection').style.display='none';
-      $('appSection').style.display='block';
-      $('userEmail').textContent = user.email || '';
-      $('userRole').textContent = profile?.vehicleType || profile?.vehiculo || 'repartidor';
-      requestNotificationPermission();
-      initCourierMap();
-      if (!profile?.approvedForDeliveries) {
-        $('approvalGate').style.display='block';
-        $('approvalGate').innerHTML = `<b>Tu perfil está en revisión.</b> Estado actual: <span class="${statusClass(profile?.approvalStatus || 'pendiente')}">${safe(profile?.approvalStatus || 'pendiente')}</span>. Cuando el administrador lo apruebe, podrás aceptar pedidos.`;
-        $('courierPanel').style.display='none';
-        return;
-      }
-      $('approvalGate').style.display='none';
-      $('courierPanel').style.display='block';
-      startLiveLocation();
-      loadMyRating();
-      ordersUnsubscribe = db.collection('pedidos').onSnapshot(snapshot => renderOrders({docs: sortDocsByRecent(snapshot.docs), empty: snapshot.empty}), err => showMessage(err.message,'danger'));
-      couriersUnsubscribe = db.collection('repartidores').onSnapshot(renderCouriers);
-      if (cleanupTimer) clearInterval(cleanupTimer);
-      cleanupTimer = scheduleCleanup();
-    }
-    auth.onAuthStateChanged(async user => {
-      if (!user) return;
-      const profile = await getUserProfile(user.uid);
-      if (!profile || profile.role !== 'repartidor') return showMessage('Tu cuenta no está registrada como repartidor.', 'danger');
-      startCourierApp(user, profile);
-    });
+    async function loginUser(){ const email = $('email').value.trim(), password = $('password').value.trim(); if (!email || !password) return showMessage('Completa email y contraseña.', 'warning'); try{ await auth.signInWithEmailAndPassword(email, password); }catch(err){ showMessage('Error al iniciar sesión: ' + err.message, 'danger'); } }
+    async function logoutUser(){ try{ if (watchId) navigator.geolocation.clearWatch(watchId); }catch{} if (appUser) await db.collection('repartidores').doc(appUser.uid).set({activo:false, actualizado:FieldValue.serverTimestamp()},{merge:true}).catch(()=>{}); await auth.signOut(); location.reload(); }
+    async function persistCourierLocation(lat, lng){ if (!appUser) return; await db.collection('repartidores').doc(appUser.uid).set({ uid:appUser.uid, email:appUser.email || '', nombre: appProfile?.fullName || appProfile?.nombre || '', vehiculo: appProfile?.vehicleType || appProfile?.vehiculo || '', vehicleType: appProfile?.vehicleType || appProfile?.vehiculo || '', lat, lng, activo:true, actualizado:FieldValue.serverTimestamp(), approvalStatus: appProfile?.approvalStatus || 'aprobado', approvedForDeliveries: appProfile?.approvedForDeliveries === true, aprobado: appProfile?.approvedForDeliveries === true, estado: appProfile?.approvedForDeliveries ? 'aprobado' : (appProfile?.approvalStatus || 'pendiente') },{merge:true}); }
+    function startLiveLocation(){ if (!navigator.geolocation || !appUser) return; watchId = navigator.geolocation.watchPosition(async pos => { myLatLng = [pos.coords.latitude, pos.coords.longitude]; initCourierMap(); if (myMarker) courierMap.removeLayer(myMarker); myMarker = L.marker(myLatLng).addTo(courierMap).bindPopup('Tu ubicación'); await persistCourierLocation(pos.coords.latitude, pos.coords.longitude); renderNearbyHint(); }, err => console.warn(err), {enableHighAccuracy:true, timeout:15000, maximumAge:4000}); }
+    function renderNearbyHint(){ const box = $('statusMessage'); if (!myLatLng || !box || box.style.display === 'block') return; box.className = 'alert alert-info'; box.innerHTML = `Buscando pedidos en un radio de <b>${MAX_ORDER_RADIUS_KM} km</b> alrededor de tu ubicación.`; box.style.display = 'block'; clearTimeout(showMessage._t); showMessage._t = setTimeout(()=>{ if (box.classList.contains('alert-info')) box.style.display='none'; }, 3500); }
+    function drawRouteTo(lat, lng){ initCourierMap(); if (!myLatLng) return showMessage('Activa tu ubicación para ver la ruta.', 'warning'); if (routingControl) courierMap.removeControl(routingControl); routingControl = L.Routing.control({ waypoints:[L.latLng(myLatLng[0], myLatLng[1]), L.latLng(lat,lng)], router:L.Routing.osrmv1({ serviceUrl:'https://router.project-osrm.org/route/v1' }), show:false, addWaypoints:false, routeWhileDragging:false, lineOptions:{styles:[{color:'#1ca358',opacity:0.9,weight:6}]}, createMarker:(i, wp)=> i===0 ? L.marker(wp.latLng, {title:'Tú'}) : L.marker(wp.latLng, {title:'Entrega'}) }).addTo(courierMap); }
+    async function openNavigation(id){ const doc = await db.collection('pedidos').doc(id).get(); const d = doc.data() || {}; if (!d.lat || !d.lng) return showMessage('Este pedido no tiene ubicación disponible.', 'warning'); drawRouteTo(Number(d.lat), Number(d.lng)); if (!myLatLng) return; const url = `https://www.google.com/maps/dir/?api=1&origin=${myLatLng[0]},${myLatLng[1]}&destination=${d.lat},${d.lng}&travelmode=driving`; window.open(url, '_blank'); }
+    function renderCouriers(snapshot){ repartidorLayer.clearLayers(); snapshot.forEach(doc => { const d=doc.data(); if (!d.lat || !d.lng || !d.activo) return; L.circleMarker([d.lat,d.lng], {radius:d.uid===appUser.uid?10:7,color:'#0f7d40',fillColor:d.uid===appUser.uid?'#1ca358':'#7bd39a',fillOpacity:1}).addTo(repartidorLayer).bindPopup(d.uid===appUser.uid?'Tú':safe(d.nombre || d.email,'Repartidor')); }); }
+    function orderButtons(id,d){ const mine = d.repartidorId === appUser.uid; const wa = d.clienteTelefono ? `<a class="btn btn-outline-success btn-sm" target="_blank" href="https://wa.me/${cleanPhone(d.clienteTelefono)}?text=${encodeURIComponent('Hola, soy tu repartidor de San Antonio Shop. Estoy en camino con tu pedido.')}">WhatsApp</a>` : ''; const routeBtn = `<button class="btn btn-soft btn-sm" onclick="openNavigation('${id}')">Ruta</button>`; return `<div class="top-actions mt-3">${d.estado==='pendiente' ? `<button class="btn btn-success btn-sm" onclick="acceptOrder('${id}')">Aceptar</button>` : ''}${mine && d.estado==='aceptado' ? `<button class="btn btn-soft btn-sm" onclick="updateOrderStatus('${id}','en_camino')">En camino</button>` : ''}${mine && d.estado==='en_camino' ? `<button class="btn btn-soft btn-sm" onclick="updateOrderStatus('${id}','entregado')">Entregado</button>` : ''}${mine && ['aceptado','en_camino'].includes(d.estado) ? `<button class="btn btn-outline-danger btn-sm" onclick="updateOrderStatus('${id}','cancelado')">Cancelar</button>` : ''}${routeBtn}${wa}</div>`; }
+    function renderOrders(snapshot){ initCourierMap(); pedidosLayer.clearLayers(); let activos=0,mios=0, visibles=0; if (snapshot.empty) { $('listaPedidos').innerHTML='<div class="empty-state">No hay pedidos disponibles por ahora.</div>'; $('activosCount').textContent='0'; $('miosCount').textContent='0'; return; } let html=''; snapshot.docs.forEach(doc => { const d={...(doc.data()||{})}; d.estado = normalizeStatus(d.estado); if (!ORDER_STATUSES.includes(d.estado)) return; if (!canCourierSeeOrder(d)) return; visibles++; if (!['entregado','cancelado'].includes(d.estado)) activos++; if (d.repartidorId === appUser.uid) mios++; let kmText = '—'; if (myLatLng && d.lat && d.lng){ const km = haversineKm(myLatLng[0], myLatLng[1], Number(d.lat), Number(d.lng)); kmText = `${km.toFixed(1)} km`; } if (d.lat && d.lng){ const marker = L.marker([d.lat,d.lng]).addTo(pedidosLayer).bindPopup(`<b>${safe(d.texto)}</b><br>${safe(d.ciudad)}<br>${currency(d.total || 0)}`); if (selectedOrderId === doc.id){ marker.openPopup(); drawRouteTo(Number(d.lat), Number(d.lng)); } } if (d.estado==='pendiente' && !seenPendingIds.has(doc.id)) { browserNotify('Nuevo pedido cerca de ti', `${safe(d.texto,'Hay un pedido')} · ${kmText}`); seenPendingIds.add(doc.id); } html += `<div class="order-card" onclick="focusOrder('${doc.id}', ${Number(d.lat || 0)}, ${Number(d.lng || 0)})"><div class="d-flex justify-content-between align-items-start gap-2 flex-wrap"><div><div class="fw-bold">${safe(d.texto)}</div><div class="small-muted">${safe(d.provincia)} • ${safe(d.ciudad)}</div></div><div class="d-flex gap-2 flex-wrap"><span class="${statusClass(d.estado)}">${orderStatusLabel(d.estado)}</span><span class="badge-chip">${kmText}</span></div></div><div class="small-grid mt-3"><div class="mini-data"><b>Total:</b> ${currency(d.total || 0)}</div><div class="mini-data"><b>Envío:</b> ${currency(d.costoEnvio || 0)}</div><div class="mini-data"><b>Pago:</b> ${safe(d.metodoPago).replace(/_/g,' ')}</div><div class="mini-data"><b>Cliente:</b> ${safe(d.clienteEmail)}</div><div class="mini-data"><b>ETA:</b> ${safe(d.tiempoEstimadoMin,'—')} min</div></div>${orderButtons(doc.id,d)}</div>`; }); $('listaPedidos').innerHTML = visibles ? html : '<div class="empty-state">No hay pedidos cerca de tu ubicación en este momento.</div>'; $('activosCount').textContent = String(activos); $('miosCount').textContent = String(mios); const layers = []; if (myMarker) layers.push(myMarker); pedidosLayer.eachLayer(l=>layers.push(l)); if (layers.length) courierMap.fitBounds(L.featureGroup(layers).getBounds().pad(0.18)); }
+    function focusOrder(id, lat, lng){ selectedOrderId = id; if (lat && lng) drawRouteTo(lat,lng); }
+    async function acceptOrder(id){ if (!appProfile?.approvedForDeliveries) return showMessage('Tu perfil todavía no está aprobado.', 'warning'); try{ const ref = db.collection('pedidos').doc(id); await db.runTransaction(async tx => { const snap = await tx.get(ref); if (!snap.exists) throw new Error('El pedido ya no existe.'); const d = snap.data() || {}; const estado = normalizeStatus(d.estado); if (estado !== 'pendiente') throw new Error('Este pedido ya fue tomado por otro repartidor.'); if (!myLatLng) throw new Error('Activa tu ubicación antes de aceptar pedidos.'); const distanceKm = d.lat && d.lng ? haversineKm(myLatLng[0], myLatLng[1], Number(d.lat), Number(d.lng)) : 9999; if (distanceKm > MAX_ORDER_RADIUS_KM) throw new Error(`Este pedido está fuera de tu radio de ${MAX_ORDER_RADIUS_KM} km.`); tx.update(ref, { estado:'aceptado', repartidorId:appUser.uid, repartidorEmail:appUser.email || '', courierLat: myLatLng[0], courierLng: myLatLng[1], ultimaActualizacion:FieldValue.serverTimestamp(), tiempoEstimadoMin: estimateEtaMinutes(distanceKm, 'aceptado') }); }); showMessage('Pedido aceptado. Ya puedes seguir la ruta.'); }catch(err){ showMessage('No se pudo aceptar: ' + err.message, 'danger'); } }
+    async function updateOrderStatus(id,status){ try{ const ref = db.collection('pedidos').doc(id); const snap = await ref.get(); if (!snap.exists) throw new Error('El pedido ya no existe.'); const payload = { estado:status, ultimaActualizacion:FieldValue.serverTimestamp() }; if (status === 'en_camino' && myLatLng){ payload.courierLat = myLatLng[0]; payload.courierLng = myLatLng[1]; } if (status === 'entregado') { payload.estadoPago = 'pagado'; payload.courierRatingPending = true; payload.deliveredAt = FieldValue.serverTimestamp(); await ref.update(payload); showMessage('Pedido entregado. Quedará disponible en historial del cliente.'); return; } if (status === 'cancelado') payload.canceladoPor = 'repartidor'; await ref.update(payload); showMessage('Estado actualizado.'); }catch(err){ showMessage('No se pudo actualizar: ' + err.message, 'danger'); } }
+    async function loadMyRating(){ if (!appUser) return; const snap = await db.collection('calificaciones').where('repartidorId','==',appUser.uid).get(); const avg = averageRating(snap.docs.map(doc=>doc.data())); $('ratingAvg').textContent = avg.toFixed(1); }
+    async function startCourierApp(user, profile){ appUser = user; appProfile = profile || {}; $('authSection').style.display='none'; $('appSection').style.display='block'; $('userEmail').textContent = user.email || ''; $('userRole').textContent = profile?.vehicleType || profile?.vehiculo || 'repartidor'; requestNotificationPermission(); initCourierMap(); if (!profile?.approvedForDeliveries) { $('approvalGate').style.display='block'; $('approvalGate').innerHTML = `<b>Tu perfil está en revisión.</b> Estado actual: <span class="${statusClass(profile?.approvalStatus || 'pendiente')}">${safe(profile?.approvalStatus || 'pendiente')}</span>. Cuando el administrador lo apruebe, podrás aceptar pedidos.`; $('courierPanel').style.display='none'; return; } $('approvalGate').style.display='none'; $('courierPanel').style.display='block'; startLiveLocation(); loadMyRating(); ordersUnsubscribe = db.collection('pedidos').onSnapshot(snapshot => renderOrders({docs: sortDocsByRecent(snapshot.docs), empty: snapshot.empty}), err => showMessage(err.message,'danger')); couriersUnsubscribe = db.collection('repartidores').onSnapshot(renderCouriers); if (cleanupTimer) clearInterval(cleanupTimer); cleanupTimer = scheduleCleanup(); }
+    auth.onAuthStateChanged(async user => { if (!user) { $('authSection').style.display='block'; $('appSection').style.display='none'; return; } const profile = await getUserProfile(user.uid); if (!profile || profile.role !== 'repartidor') { showMessage('Tu cuenta no está registrada como repartidor.', 'danger'); setTimeout(()=>window.location.href='index.html', 1200); return; } startCourierApp(user, profile); });
+    fillProvinceSelect('registerProvince');
   </script>
-
-
-<script>
-const ciudadesPorProvincia = {
-"Azuay": ["Cuenca","Gualaceo","Paute","Sigsig","Chordeleg"],
-"Bolívar": ["Guaranda"],
-"Cañar": ["Azogues","La Troncal"],
-"Carchi": ["Tulcán"],
-"Chimborazo": ["Riobamba"],
-"Cotopaxi": ["Latacunga"],
-"El Oro": ["Machala"],
-"Esmeraldas": ["Esmeraldas"],
-"Galápagos": ["Puerto Ayora"],
-"Guayas": ["Guayaquil","Daule","Samborondón"],
-"Imbabura": ["Ibarra"],
-"Loja": ["Loja"],
-"Los Ríos": ["Babahoyo"],
-"Manabí": ["Portoviejo","Manta"],
-"Morona Santiago": ["Macas"],
-"Napo": ["Tena"],
-"Orellana": ["Coca"],
-"Pastaza": ["Puyo"],
-"Pichincha": ["Quito"],
-"Santa Elena": ["Santa Elena"],
-"Santo Domingo": ["Santo Domingo"],
-"Sucumbíos": ["Lago Agrio"],
-"Tungurahua": ["Ambato"],
-"Zamora Chinchipe": ["Zamora"]
-};
-
-function cargarCiudades(){
-let p=document.getElementById("provincia").value;
-let c=document.getElementById("ciudad");
-if(!c) return;
-c.innerHTML="<option value=''>Selecciona ciudad</option>";
-if(ciudadesPorProvincia[p]){
-ciudadesPorProvincia[p].forEach(ci=>{
-let op=document.createElement("option");
-op.value=ci;
-op.textContent=ci;
-c.appendChild(op);
-});
-}
-}
-</script>
-
 </body>
 </html>

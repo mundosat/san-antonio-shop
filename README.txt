@@ -1,64 +1,29 @@
-SAN ANTONIO SHOP ECUADOR V5
+SAN ANTONIO SHOP ECUADOR V7
 ===========================
 
-Esta versión incluye:
-- clientes con pedidos persistentes
-- panel de repartidores aprobado manualmente
-- tracking básico en vivo del repartidor
-- ruta automática gratis con Leaflet + OSRM
-- costo estimado de envío automático
-- métodos de pago: efectivo, contra entrega, tarjeta y transferencia
-- calificación de repartidores
-- panel administrador con solicitudes, pedidos, pagos y métricas
-- autoborrado con historial:
-  * pendiente > 3 horas
-  * entregado > 30 minutos
-  * cancelado > 30 minutos
+ESTRUCTURA SEPARADA
+- index.html ........ app de clientes
+- repartidor.html ... app exclusiva de repartidores
+- admin.html ........ panel administrador
+- shared.js ......... funciones y configuración compartida
 
-ARCHIVOS PRINCIPALES
-- index.html ........ cliente
-- repartidor.html ... repartidor
-- admin.html ........ administrador
-- shared.js ......... configuración y funciones comunes
+QUÉ SE CORRIGIÓ
+- separación real entre cliente y repartidor
+- formulario roto de cliente reparado
+- creación de pedidos reparada
+- solicitud de repartidor movida a su propia app
+- reglas de Firestore ajustadas para que repartidores aprobados sí puedan ver pedidos pendientes
+- login de cliente redirige al panel correcto si la cuenta es de repartidor
+- el cliente conserva seguimiento, historial y calificación
 
-CONFIGURACIÓN NECESARIA
-1) Firebase Authentication habilitado
-2) Firestore Database habilitado
-3) Firebase Storage habilitado (para documentos y comprobantes)
-4) En usuarios/<tu_uid> agrega:
-   isAdmin: true
+IMPORTANTE
+1) Publica otra vez firestore.rules en Firebase.
+2) Mantén Authentication, Firestore y Storage habilitados.
+3) En usuarios/<tu_uid> agrega isAdmin: true para tu cuenta administrativa.
+4) Si Firestore pide índices, créalos desde el enlace que te muestre Firebase.
 
-COLECCIONES USADAS
-- usuarios
-- pedidos
-- repartidores
-- calificaciones
-- historial_pedidos
-
-REGLAS / ÍNDICES
-Puede que Firestore te pida crear índices al usar:
-- pedidos where clienteId + orderBy createdAt
-- pedidos orderBy createdAt
-
-Si Firestore muestra un enlace para crear el índice, solo ábrelo y confirma.
-
-NOTAS IMPORTANTES
-- El cálculo del costo está listo y funcional como estimado local. La distancia inicial usa la ubicación del cliente y una estimación segura para no romper el flujo.
-- La ruta en el mapa sí se dibuja en tiempo real cuando un repartidor ya tomó el pedido.
-- El autoborrado se ejecuta cuando entra alguien a la app. Si quieres borrado 100% automático aunque nadie abra la app, luego conviene usar una Cloud Function programada.
-- Para pagos con tarjeta dejé la estructura lista. La pasarela real se conecta después.
-
-PUBLICAR
-Puedes usar localhost, GitHub Pages o hosting HTTPS.
-En Firebase Authentication agrega como dominio autorizado:
-- mundosat.github.io
-(o tu dominio final)
-
-
-
-V6 agrega:
-- ETA estimado para cliente
-- costo usando repartidor activo más cercano cuando exista
-- mapa operativo en vivo en admin
-- archivos firestore.rules y storage.rules listos para copiar
-- soporte para historial y tracking mejorado
+FLUJO RECOMENDADO
+- Cliente entra por index.html
+- Repartidor entra por repartidor.html
+- Admin revisa y aprueba solicitudes en admin.html
+- Ambas apps comparten el mismo backend en Firebase
