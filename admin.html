@@ -60,8 +60,8 @@
 
         <div class="col-lg-5">
           <div class="section-card p-3 p-lg-4 mb-4">
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3"><div><h4 class="fw-bold mb-0">Solicitudes de repartidores</h4><div class="small-muted">Solo se muestran solicitudes pendientes. Las aprobadas se ocultan y las rechazadas se eliminan.</div></div><div class="top-actions"><button class="btn btn-soft btn-sm" onclick="loadRequests(true)">Actualizar</button><button class="btn btn-outline-danger btn-sm" onclick="clearHiddenRejectedRequests()">Eliminar rechazadas ocultas</button></div></div>
-            <div class="tabs-inline mb-3 request-tabs"><button class="active" id="requestTabPending" onclick="setRequestView('pendiente', this)">Pendientes</button><button id="requestTabAll" onclick="setRequestView('todas', this)">Todas</button></div>
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3"><div><h4 class="fw-bold mb-0">Solicitudes de repartidores</h4><div class="small-muted">Aquí solo se ven solicitudes pendientes. Al aprobar, desaparecen de esta lista; al rechazar, se eliminan.</div></div><div class="top-actions"><button class="btn btn-soft btn-sm" onclick="loadRequests(true)">Actualizar</button><button class="btn btn-outline-danger btn-sm" onclick="clearHiddenRejectedRequests()">Eliminar rechazadas ocultas</button></div></div>
+            <div class="tabs-inline mb-3 request-tabs"><button class="active" id="requestTabPending" onclick="setRequestView('pendiente', this)">Pendientes visibles</button></div>
             <div id="requestList"></div>
           </div>
           <div class="section-card p-3 p-lg-4 mb-4">
@@ -115,7 +115,7 @@
     async function ensureAdmin(user){ const profile = await getUserProfile(user.uid); return !!profile?.isAdmin; }
     function todayStart(){ const d = new Date(); d.setHours(0,0,0,0); return d; }
     function setRequestView(view, btn){
-      requestView = view;
+      requestView = 'pendiente';
       document.querySelectorAll('.request-tabs button').forEach(b=>b.classList.remove('active'));
       if (btn) btn.classList.add('active');
       renderRequests();
@@ -137,7 +137,7 @@
     }
     function renderRequests(showToast=false){
       const list = $('requestList');
-      const source = requestView === 'todas' ? liveRequests : liveRequests.filter(d => (d.approvalStatus || 'pendiente') === 'pendiente');
+      const source = liveRequests.filter(d => (d.approvalStatus || 'pendiente') === 'pendiente');
       let pending=0, approved=0;
       liveRequests.forEach(d => {
         const st = d.approvalStatus || 'pendiente';
@@ -161,7 +161,7 @@
         return `<div class="order-card request-card request-${st}"><div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2"><div><div class="fw-bold">${safe(d.fullName,'Sin nombre')} <span class="${statusClass(st)}">${st}</span></div><div class="small-muted">${safe(d.email)} • ${safe(d.telefono)} • ${safe(d.provincia)} / ${safe(d.ciudad)}</div></div><div class="small-muted">Actualizado: ${formatDate(d.updatedSort || d.updatedAt || d.createdAt || d.actualizado)}</div></div><div class="small-grid mb-3"><div class="mini-data"><b>Cédula:</b> ${safe(d.cedula)}</div><div class="mini-data"><b>Vehículo:</b> ${safe(d.vehicleType)}</div><div class="mini-data"><b>Placa:</b> ${safe(d.placa)}</div><div class="mini-data"><b>Licencia:</b> ${safe(d.licenseNumber)}</div></div><div class="small-grid mb-3">${docsHtml}</div><textarea id="note-${uid}" class="form-control mb-3" rows="2" placeholder="Nota interna o motivo">${d.reviewNotes || ''}</textarea><div class="d-flex flex-wrap gap-2"><button class="btn btn-success btn-sm" onclick="reviewCourier('${uid}','aprobado')">Aprobar</button><button class="btn btn-outline-danger btn-sm" onclick="reviewCourier('${uid}','rechazado')">Rechazar y borrar</button>${st !== 'pendiente' ? `<button class="btn btn-soft btn-sm" onclick="reviewCourier('${uid}','pendiente')">Volver a pendiente</button>` : ''}${d.telefono ? `<a class="btn btn-soft btn-sm" target="_blank" href="https://wa.me/${cleanPhone(d.telefono)}?text=${encodeURIComponent('Hola, estamos revisando tu solicitud de repartidor en San Antonio Shop.')}">WhatsApp</a>` : ''}</div></div>`;
       });
       list.innerHTML = cards.join('');
-      if (showToast) showMessage('Solicitudes actualizadas.');
+      if (showToast) showMessage('Solicitudes pendientes actualizadas.');
     }
     async function loadRequests(showToast=false){
       const [usersSnap, couriersSnap] = await Promise.all([
@@ -172,6 +172,7 @@
       usersSnap.forEach(doc => byId.set(doc.id, resolveCourierEntry(doc.id, doc.data(), {})));
       couriersSnap.forEach(doc => byId.set(doc.id, resolveCourierEntry(doc.id, byId.get(doc.id) || {}, doc.data())));
       liveRequests = [...byId.values()].filter(d => d.role === 'repartidor' || d.cedula || d.vehicleType || d.licenseNumber || d.approvalStatus === 'pendiente' || d.approvalStatus === 'aprobado');
+      // En el panel de solicitudes solo deben mostrarse pendientes; las aprobadas se cuentan en métricas pero no se renderizan.
       renderRequests(showToast);
     }
     async function reviewCourier(uid, status){
@@ -186,7 +187,7 @@
           await db.collection('repartidores').doc(uid).set({
             role:'repartidor', fullName: liveRequests.find(x=>x.id===uid)?.fullName || '', approvalStatus:'aprobado', approvedForDeliveries:true, activo:false, reviewNotes:note, reviewedAt:FieldValue.serverTimestamp(), updatedAt:FieldValue.serverTimestamp()
           }, {merge:true});
-          showMessage('Repartidor aprobado. La solicitud se ocultó del panel.');
+          showMessage('Repartidor aprobado. La solicitud ya no aparece en pendientes.');
         } else if (rejected) {
           const courierRef = db.collection('repartidores').doc(uid);
           const courierDoc = await courierRef.get();
