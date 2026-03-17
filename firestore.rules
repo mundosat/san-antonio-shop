@@ -1,42 +1,77 @@
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
-    function signedIn() { return request.auth != null; }
-    function isOwner(uid) { return signedIn() && request.auth.uid == uid; }
-    function currentUser() { return get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data; }
-    function isAdmin() { return signedIn() && currentUser().isAdmin == true; }
-    function isApprovedCourier() {
-      return signedIn()
-        && currentUser().role == 'repartidor'
-        && currentUser().approvedForDeliveries == true;
+
+    function signedIn() {
+      return request.auth != null;
     }
 
-    match /usuarios/{uid} {
-      allow read: if isOwner(uid) || isAdmin();
-      allow create: if isOwner(uid);
-      allow update: if isOwner(uid) || isAdmin();
+    function userDoc() {
+      return get(/databases/$(database)/documents/usuarios/$(request.auth.uid));
+    }
+
+    function userData() {
+      return userDoc().data;
+    }
+
+    function isAdmin() {
+      return signedIn() && userDoc().exists() && userData().isAdmin == true;
+    }
+
+    function isClient() {
+      return signedIn() && userDoc().exists() && userData().role == 'cliente';
+    }
+
+    function isCourierApproved() {
+      return signedIn()
+        && userDoc().exists()
+        && userData().role == 'repartidor'
+        && userData().approvedForDeliveries == true;
+    }
+
+    function isOrderOwner() {
+      return signedIn() && resource.data.clienteId == request.auth.uid;
+    }
+
+    function isAssignedCourier() {
+      return signedIn() && resource.data.repartidorId == request.auth.uid;
+    }
+
+    match /usuarios/{userId} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.auth.uid == userId;
+      allow update: if request.auth.uid == userId || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /repartidores/{id} {
+      allow read: if isAdmin() || (signedIn() && request.auth.uid == id);
+      allow create, update: if request.auth.uid == id || isAdmin();
       allow delete: if isAdmin();
     }
 
     match /pedidos/{pedidoId} {
-      allow create: if signedIn();
-      allow read: if isAdmin()
-        || (signedIn() && resource.data.clienteId == request.auth.uid)
-        || (isApprovedCourier() && (resource.data.estado == 'pendiente' || resource.data.repartidorId == request.auth.uid));
-
-      allow update: if isAdmin()
-        || (signedIn() && resource.data.clienteId == request.auth.uid)
-        || (isApprovedCourier() && (
-            resource.data.repartidorId == request.auth.uid
-            || (resource.data.estado == 'pendiente' && request.resource.data.repartidorId == request.auth.uid)
-        ));
-
+      allow create: if isClient();
+      allow read: if isAdmin() || isOrderOwner() || isAssignedCourier();
+      allow update: if
+        isAdmin()
+        || (
+          isCourierApproved()
+          && resource.data.estado == 'pendiente'
+          && request.resource.data.repartidorId == request.auth.uid
+          && request.resource.data.estado == 'aceptado'
+        )
+        || (
+          isCourierApproved()
+          && resource.data.repartidorId == request.auth.uid
+        )
+        || (
+          isOrderOwner()
+          && request.resource.data.clienteId == resource.data.clienteId
+          && request.resource.data.estado == 'cancelado'
+        );
       allow delete: if isAdmin();
-    }
-
-    match /repartidores/{uid} {
-      allow read: if signedIn();
-      allow write: if isOwner(uid) || isAdmin();
     }
 
     match /calificaciones/{id} {
@@ -48,6 +83,10 @@ service cloud.firestore {
     match /historial_pedidos/{id} {
       allow read: if isAdmin() || (signedIn() && resource.data.clienteId == request.auth.uid);
       allow write: if isAdmin();
+    }
+
+    match /repartidores_rechazados/{id} {
+      allow read, write: if isAdmin();
     }
   }
 }

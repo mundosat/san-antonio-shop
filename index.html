@@ -93,7 +93,7 @@
                 <div class="premium-input mb-3"><i class="bi bi-lock"></i><input id="regPassword" type="password" class="form-control premium-control with-action" placeholder="Contraseña" /><button class="input-action" type="button" onclick="togglePassword('regPassword', this)"><i class="bi bi-eye"></i></button></div>
                 <div class="grid-2 mb-3">
                   <select id="registerProvince" class="form-select premium-select"></select>
-                  <div class="premium-input city-input-wrap"><i class="bi bi-buildings"></i><input id="registerCity" class="form-control premium-control" placeholder="Ciudad" /></div>
+                  <div class="premium-input city-input-wrap"><i class="bi bi-buildings"></i><select id="registerCity" class="form-select premium-select"></select></div>
                 </div>
                 <div class="auth-meta-row mb-3">
                   <span class="small-muted">Los repartidores ahora usan la app separada.</span>
@@ -146,7 +146,7 @@
                 </div>
                 <div>
                   <label class="form-label">Ciudad</label>
-                  <input id="ciudad" class="form-control" placeholder="Ciudad" />
+                  <select id="ciudad" class="form-select"></select>
                 </div>
               </div>
             </div>
@@ -541,8 +541,8 @@
     }
     async function startCustomerApp(user, profile){
       appUser = user; appProfile = profile || {role:'cliente'};
-      fillProvinceSelect('registerProvince', profile?.provincia || '');
-      fillProvinceSelect('provincia', profile?.provincia || '');
+      bindProvinceCity('registerProvince','registerCity', profile?.provincia || '', profile?.ciudad || '');
+      bindProvinceCity('provincia','ciudad', profile?.provincia || '', profile?.ciudad || '');
       fillPaymentSelect('metodoPago');
       toggleTransferFields();
       $('metodoPago').addEventListener('change', toggleTransferFields);
@@ -550,7 +550,6 @@
       $('appSection').style.display = 'block';
       $('userEmail').textContent = user.email || '';
       if (profile?.telefono) $('clienteTelefono').value = profile.telefono;
-      if (profile?.ciudad) $('ciudad').value = profile.ciudad;
       initCustomerMap();
       locateUser();
       requestNotificationPermission();
@@ -560,7 +559,7 @@
       cleanupTimer = scheduleCleanup();
     }
     auth.onAuthStateChanged(async user => {
-      if (!user) { $('authSection').style.display='block'; $('appSection').style.display='none'; return; }
+      if (!user) { bindProvinceCity('registerProvince','registerCity'); bindProvinceCity('provincia','ciudad'); $('authSection').style.display='block'; $('appSection').style.display='none'; return; }
       const profile = await getUserProfile(user.uid);
       if (profile?.role === 'repartidor') {
         showMessage('Tu cuenta pertenece a repartidores. Usa el panel de repartidores.', 'warning');

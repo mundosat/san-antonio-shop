@@ -13,6 +13,54 @@ const storage = firebase.storage ? firebase.storage() : null;
 const FieldValue = firebase.firestore.FieldValue;
 const Timestamp = firebase.firestore.Timestamp;
 const ECUADOR_PROVINCES = ["Azuay","Bolívar","Cañar","Carchi","Chimborazo","Cotopaxi","El Oro","Esmeraldas","Galápagos","Guayas","Imbabura","Loja","Los Ríos","Manabí","Morona Santiago","Napo","Orellana","Pastaza","Pichincha","Santa Elena","Santo Domingo de los Tsáchilas","Sucumbíos","Tungurahua","Zamora Chinchipe"];
+
+const ECUADOR_CITIES = {
+  "Azuay":["Cuenca","Gualaceo","Paute","Sígsig","Chordeleg","Girón","Nabón","Pucará","Santa Isabel"],
+  "Bolívar":["Guaranda","San Miguel","Chillanes","Echeandía","Caluma"],
+  "Cañar":["Azogues","La Troncal","Cañar","Biblián","Déleg","El Tambo"],
+  "Carchi":["Tulcán","Montúfar","San Gabriel","Mira","Bolívar"],
+  "Chimborazo":["Riobamba","Guano","Alausí","Colta","Chambo","Guamote"],
+  "Cotopaxi":["Latacunga","La Maná","Salcedo","Pujilí","Saquisilí"],
+  "El Oro":["Machala","Pasaje","Santa Rosa","Huaquillas","El Guabo","Arenillas"],
+  "Esmeraldas":["Esmeraldas","Atacames","Quinindé","Muisne","Rioverde"],
+  "Galápagos":["Puerto Ayora","Puerto Baquerizo Moreno","Puerto Villamil"],
+  "Guayas":["Guayaquil","Durán","Daule","Samborondón","Milagro","Playas","Naranjal"],
+  "Imbabura":["Ibarra","Otavalo","Cotacachi","Antonio Ante","Pimampiro"],
+  "Loja":["Loja","Catamayo","Saraguro","Macará","Zapotillo"],
+  "Los Ríos":["Babahoyo","Quevedo","Ventanas","Vinces","Buena Fe"],
+  "Manabí":["Portoviejo","Manta","Chone","Jipijapa","Montecristi","Bahía de Caráquez"],
+  "Morona Santiago":["Macas","Sucúa","Gualaquiza","Limón Indanza"],
+  "Napo":["Tena","Archidona","El Chaco"],
+  "Orellana":["Coca","La Joya de los Sachas","Loreto"],
+  "Pastaza":["Puyo","Mera","Santa Clara","Arajuno"],
+  "Pichincha":["Quito","Cayambe","Rumiñahui","Mejía","Pedro Moncayo","Puerto Quito"],
+  "Santa Elena":["Santa Elena","La Libertad","Salinas"],
+  "Santo Domingo de los Tsáchilas":["Santo Domingo","La Concordia"],
+  "Sucumbíos":["Lago Agrio","Shushufindi","Cascales","Cuyabeno"],
+  "Tungurahua":["Ambato","Baños","Pelileo","Píllaro","Patate"],
+  "Zamora Chinchipe":["Zamora","Yantzaza","El Pangui","Zumba"]
+};
+function fillCitySelect(id, province='', selected=''){
+  const el = $(id); if (!el) return;
+  const cities = ECUADOR_CITIES[province] || [];
+  const current = selected || el.value || '';
+  const options = ['<option value="">Ciudad</option>'].concat(cities.map(c => `<option value="${c}">${c}</option>`));
+  if (el.tagName === 'SELECT') {
+    el.innerHTML = options.join('');
+    if (current) el.value = current;
+  } else {
+    if (current) el.value = current;
+  }
+}
+function bindProvinceCity(provinceId, cityId, defaultProvince='', defaultCity=''){
+  fillProvinceSelect(provinceId, defaultProvince);
+  fillCitySelect(cityId, defaultProvince, defaultCity);
+  const prov = $(provinceId), city = $(cityId);
+  if (!prov || !city || prov.dataset.boundCities === '1') return;
+  prov.dataset.boundCities = '1';
+  prov.addEventListener('change', () => fillCitySelect(cityId, prov.value, ''));
+}
+
 const PAYMENT_METHODS = [
   {value:'efectivo', label:'Efectivo'},
   {value:'contra_entrega', label:'Contra entrega'},

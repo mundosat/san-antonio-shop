@@ -7,6 +7,7 @@
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="icons/icon-192.png" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
   <link rel="stylesheet" href="styles.css" />
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -47,6 +48,7 @@
             <div class="filter-row mb-3">
               <select id="orderFilter" class="form-select" onchange="loadOrders()"><option value="todos">Todos</option><option value="pendiente">Pendiente</option><option value="aceptado">Aceptado</option><option value="en_camino">En camino</option><option value="entregado">Entregado</option><option value="cancelado">Cancelado</option></select>
               <select id="paymentFilter" class="form-select" onchange="loadOrders()"><option value="todos">Todos los pagos</option><option value="pendiente">Pago pendiente</option><option value="pagado">Pago pagado</option><option value="verificando">Pago verificando</option><option value="rechazado">Pago rechazado</option></select>
+              <input id="searchFilter" class="form-control" placeholder="Buscar por ciudad, cliente o detalle" oninput="loadOrders()" />
             </div>
             <div id="ordersList"></div>
           </div>
@@ -153,21 +155,53 @@
         await loadOpsMap();
       } catch(err){ showMessage('No se pudo guardar: ' + err.message, 'danger'); }
     }
-    async function loadOrders(showToast=false){
-      const filter = $('orderFilter').value, payment = $('paymentFilter').value;
-      const snap = await db.collection('pedidos').get();
-      const list = $('ordersList');
-      let cards = [];
-      sortDocsByRecent(snap.docs).forEach(doc => {
-        const d = doc.data() || {};
-        if (filter !== 'todos' && d.estado !== filter) return;
-        if (payment !== 'todos' && (d.estadoPago || 'pendiente') !== payment) return;
-        cards.push(`<div class="order-card"><div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2"><div><div class="fw-bold">${safe(d.texto)}</div><div class="small-muted">${safe(d.provincia)} • ${safe(d.ciudad)} • ${safe(d.clienteEmail)}</div></div><div class="d-flex gap-2 flex-wrap"><span class="${statusClass(d.estado)}">${orderStatusLabel(d.estado)}</span><span class="${paymentStatusClass(d.estadoPago || 'pendiente')}">${paymentStatusLabel(d.estadoPago || 'pendiente')}</span></div></div><div class="small-grid mb-3"><div class="mini-data"><b>Total:</b> ${currency(d.total || 0)}</div><div class="mini-data"><b>Envío:</b> ${currency(d.costoEnvio || 0)}</div><div class="mini-data"><b>Pago:</b> ${safe(d.metodoPago).replace(/_/g,' ')}</div><div class="mini-data"><b>Creado:</b> ${formatDate(d.createdAt || d.ultimaActualizacion)}</div></div>${d.comprobanteUrl ? `<div class="mb-3"><a href="${d.comprobanteUrl}" target="_blank">Abrir comprobante</a></div>` : ''}<div class="d-flex flex-wrap gap-2"><button class="btn btn-soft btn-sm" onclick="setPaymentStatus('${doc.id}','pagado')">Marcar pagado</button><button class="btn btn-soft btn-sm" onclick="setPaymentStatus('${doc.id}','verificando')">Verificando</button><button class="btn btn-outline-danger btn-sm" onclick="setPaymentStatus('${doc.id}','rechazado')">Rechazar pago</button>${!['entregado','cancelado'].includes(d.estado) ? `<button class="btn btn-outline-danger btn-sm" onclick="forceCancelOrder('${doc.id}')">Cancelar pedido</button>` : ''}</div></div>`);
-      });
-      list.innerHTML = cards.length ? cards.join('') : '<div class="empty-state">No hay pedidos para ese filtro.</div>';
-      if (showToast) showMessage('Pedidos actualizados.');
-      loadStats();
-    }
+    
+async function loadOrders(showToast=false){
+  const filter = $('orderFilter').value, payment = $('paymentFilter').value;
+  const search = ($('searchFilter')?.value || '').trim().toLowerCase();
+  const snap = await db.collection('pedidos').get();
+  const list = $('ordersList');
+  let cards = [];
+  sortDocsByRecent(snap.docs).forEach(doc => {
+    const d = doc.data() || {};
+    const haystack = [d.texto, d.provincia, d.ciudad, d.clienteEmail, d.repartidorEmail].join(' ').toLowerCase();
+    if (filter !== 'todos' && d.estado !== filter) return;
+    if (payment !== 'todos' && (d.estadoPago || 'pendiente') !== payment) return;
+    if (search && !haystack.includes(search)) return;
+    const quickAssign = d.estado === 'pendiente' && d.lat && d.lng ? `<button class="btn btn-success btn-sm" onclick="autoAssignNearestCourier('${doc.id}')">Autoasignar</button>` : '';
+    cards.push(`<div class="order-card"><div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2"><div><div class="fw-bold">${safe(d.texto)}</div><div class="small-muted">${safe(d.provincia)} • ${safe(d.ciudad)} • ${safe(d.clienteEmail)}</div></div><div class="d-flex gap-2 flex-wrap"><span class="${statusClass(d.estado)}">${orderStatusLabel(d.estado)}</span><span class="${paymentStatusClass(d.estadoPago || 'pendiente')}">${paymentStatusLabel(d.estadoPago || 'pendiente')}</span></div></div><div class="small-grid mb-3"><div class="mini-data"><b>Total:</b> ${currency(d.total || 0)}</div><div class="mini-data"><b>Envío:</b> ${currency(d.costoEnvio || 0)}</div><div class="mini-data"><b>Pago:</b> ${safe(d.metodoPago).replace(/_/g,' ')}</div><div class="mini-data"><b>Creado:</b> ${formatDate(d.createdAt || d.ultimaActualizacion)}</div><div class="mini-data"><b>Repartidor:</b> ${safe(d.repartidorEmail || d.repartidorId,'Sin asignar')}</div></div>${d.comprobantePagoUrl ? `<div class="mb-3"><a href="${d.comprobantePagoUrl}" target="_blank">Abrir comprobante</a></div>` : ''}<div class="d-flex flex-wrap gap-2"><button class="btn btn-soft btn-sm" onclick="setPaymentStatus('${doc.id}','pagado')">Marcar pagado</button><button class="btn btn-soft btn-sm" onclick="setPaymentStatus('${doc.id}','verificando')">Verificando</button><button class="btn btn-outline-danger btn-sm" onclick="setPaymentStatus('${doc.id}','rechazado')">Rechazar pago</button>${quickAssign}${!['entregado','cancelado'].includes(d.estado) ? `<button class="btn btn-outline-danger btn-sm" onclick="forceCancelOrder('${doc.id}')">Cancelar pedido</button>` : ''}</div></div>`);
+  });
+  list.innerHTML = cards.length ? cards.join('') : '<div class="empty-state">No hay pedidos para ese filtro.</div>';
+  if (showToast) showMessage('Pedidos actualizados.');
+  loadStats();
+}
+async function autoAssignNearestCourier(orderId){
+  try{
+    const ref = db.collection('pedidos').doc(orderId);
+    const snap = await ref.get();
+    if (!snap.exists) throw new Error('El pedido ya no existe.');
+    const d = snap.data() || {};
+    if (d.estado !== 'pendiente') throw new Error('Solo se pueden autoasignar pedidos pendientes.');
+    if (!d.lat || !d.lng) throw new Error('El pedido no tiene ubicación.');
+    const courier = await getNearestApprovedCourier(Number(d.lat), Number(d.lng));
+    if (!courier) throw new Error('No hay repartidores activos y aprobados para asignar.');
+    const distance = Number(courier.distanceKm || d.distanciaKm || 0);
+    await ref.update({
+      estado:'aceptado',
+      repartidorId:courier.uid || courier.id,
+      repartidorEmail:courier.email || '',
+      courierLat:Number(courier.lat),
+      courierLng:Number(courier.lng),
+      tiempoEstimadoMin: estimateEtaMinutes(distance, 'aceptado'),
+      distanciaKm:Number(distance.toFixed(2)),
+      ultimaActualizacion:FieldValue.serverTimestamp(),
+      autoAssigned:true
+    });
+    showMessage('Pedido autoasignado al repartidor más cercano.');
+    loadOrders(); loadOpsMap();
+  }catch(err){ showMessage('No se pudo autoasignar: ' + err.message, 'danger'); }
+}
+
     async function setPaymentStatus(id, status){ try{ await db.collection('pedidos').doc(id).update({ estadoPago:status, ultimaActualizacion:FieldValue.serverTimestamp() }); showMessage('Pago actualizado.'); loadOrders(); }catch(err){ showMessage('No se pudo actualizar el pago: ' + err.message, 'danger'); } }
     async function purgeOrderTrash(){ if (!confirm('¿Eliminar todos los pedidos cancelados o pagos rechazados?')) return; try{ const deleted = await deleteOrdersByStatuses(['cancelado','rechazado']); showMessage(`Se eliminaron ${deleted} registros.`); loadOrders(); loadStats(); }catch(err){ showMessage('No se pudieron borrar: ' + err.message, 'danger'); } }
     async function purgeRejectedRequests(){ try{ const snap = await db.collection('repartidores_rechazados').get(); let total = 0; for (const doc of snap.docs) { await doc.ref.delete(); total++; } showMessage(`Se eliminaron ${total} solicitudes rechazadas archivadas.`); }catch(err){ showMessage('No se pudieron borrar las rechazadas: ' + err.message, 'danger'); } }
@@ -212,50 +246,6 @@
 
     auth.onAuthStateChanged(async user => { if (!user) { $('loginGate').style.display='block'; $('adminSection').style.display='none'; return; } const ok = await ensureAdmin(user); if (!ok) { $('loginGate').style.display='none'; $('adminSection').style.display='block'; $('adminSection').innerHTML='<div class="section-card p-4"><div class="alert alert-danger mb-0">Tu usuario no tiene permisos de administrador. En Firestore, agrega <code>isAdmin: true</code> al documento de tu usuario en <code>usuarios/&lt;tu_uid&gt;</code>.</div></div>'; return; } $('loginGate').style.display='none'; $('adminSection').style.display='block'; loadStats(); loadOrders(); loadRequests(); loadRatings(); loadOpsMap(); if (adminOrdersUnsub) adminOrdersUnsub(); if (adminUsersUnsub) adminUsersUnsub(); if (adminCouriersUnsub) adminCouriersUnsub(); adminOrdersUnsub = db.collection('pedidos').onSnapshot(()=>{ loadStats(); loadOrders(); loadOpsMap(); }); adminUsersUnsub = db.collection('usuarios').where('role','==','repartidor').onSnapshot(()=>loadRequests()); adminCouriersUnsub = db.collection('repartidores').onSnapshot(()=>{ loadRequests(); loadOpsMap(); }); if (cleanupTimer) clearInterval(cleanupTimer); cleanupTimer = scheduleCleanup(); });
   </script>
-
-<script>
-const ciudadesPorProvincia = {
-"Azuay": ["Cuenca","Gualaceo","Paute","Sigsig","Chordeleg"],
-"Bolívar": ["Guaranda"],
-"Cañar": ["Azogues","La Troncal"],
-"Carchi": ["Tulcán"],
-"Chimborazo": ["Riobamba"],
-"Cotopaxi": ["Latacunga"],
-"El Oro": ["Machala"],
-"Esmeraldas": ["Esmeraldas"],
-"Galápagos": ["Puerto Ayora"],
-"Guayas": ["Guayaquil","Daule","Samborondón"],
-"Imbabura": ["Ibarra"],
-"Loja": ["Loja"],
-"Los Ríos": ["Babahoyo"],
-"Manabí": ["Portoviejo","Manta"],
-"Morona Santiago": ["Macas"],
-"Napo": ["Tena"],
-"Orellana": ["Coca"],
-"Pastaza": ["Puyo"],
-"Pichincha": ["Quito"],
-"Santa Elena": ["Santa Elena"],
-"Santo Domingo": ["Santo Domingo"],
-"Sucumbíos": ["Lago Agrio"],
-"Tungurahua": ["Ambato"],
-"Zamora Chinchipe": ["Zamora"]
-};
-
-function cargarCiudades(){
-let p=document.getElementById("provincia").value;
-let c=document.getElementById("ciudad");
-if(!c) return;
-c.innerHTML="<option value=''>Selecciona ciudad</option>";
-if(ciudadesPorProvincia[p]){
-ciudadesPorProvincia[p].forEach(ci=>{
-let op=document.createElement("option");
-op.value=ci;
-op.textContent=ci;
-c.appendChild(op);
-});
-}
-}
-</script>
 
 </body>
 </html>
