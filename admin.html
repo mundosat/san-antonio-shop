@@ -122,7 +122,7 @@
         const user = doc.data() || {};
         const mirror = courierMap[doc.id] || {};
         const merged = {...mirror, ...user};
-        const st = (merged.approvalStatus || merged.estado || 'pendiente').toLowerCase().trim();
+        const st = merged.approvalStatus || merged.estado || 'pendiente';
         if (st === 'aprobado') approved++;
         if (st !== 'pendiente') return;
         pending++;
@@ -142,7 +142,7 @@
           await userRef.delete();
           showMessage('Solicitud rechazada y eliminada.');
         } else {
-          const payload = { approvalStatus:'aprobado', estado:'aprobado', aprobado:true, approvedForDeliveries:true, reviewNotes: note, reviewedAt:FieldValue.serverTimestamp(), updatedAt:FieldValue.serverTimestamp(), role:'repartidor' };
+          const payload = { approvalStatus:'aprobado', approvedForDeliveries:true, reviewNotes: note, reviewedAt:FieldValue.serverTimestamp(), updatedAt:FieldValue.serverTimestamp(), role:'repartidor' };
           await userRef.set(payload, {merge:true});
           const current = (await userRef.get()).data() || {};
           await saveCourierMirror(uid, { ...current, ...payload, email: current.email || '' });
