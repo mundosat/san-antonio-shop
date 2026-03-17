@@ -1,4 +1,4 @@
-const CACHE = 'san-antonio-shop-v6.1';
+const CACHE = 'san-antonio-shop-v4';
 const ASSETS = ['./','./index.html','./repartidor.html','./admin.html','./styles.css','./manifest.json','./icons/icon-192.png','./icons/icon-512.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)).then(()=>self.skipWaiting()));

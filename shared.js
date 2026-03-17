@@ -41,47 +41,6 @@ function formatDate(value){
     return date.toLocaleString('es-EC');
   } catch { return 'Ahora'; }
 }
-
-function tsMillis(value){
-  try {
-    if (!value) return 0;
-    if (typeof value.toMillis === 'function') return value.toMillis();
-    if (typeof value.toDate === 'function') return value.toDate().getTime();
-    const date = new Date(value);
-    const time = date.getTime();
-    return Number.isFinite(time) ? time : 0;
-  } catch { return 0; }
-}
-function extractDocData(entry){
-  if (!entry) return null;
-  if (entry.data && typeof entry.data === 'function') return { id: entry.id, ...entry.data() };
-  if (entry.data && typeof entry.data === 'object' && !Array.isArray(entry.data)) return { id: entry.id, ...entry.data };
-  return entry;
-}
-function sortOrdersByRecency(list){
-  return [...list].sort((a,b)=>{
-    const aTime = tsMillis(a.ultimaActualizacion || a.updatedAt || a.deliveredAt || a.createdAt);
-    const bTime = tsMillis(b.ultimaActualizacion || b.updatedAt || b.deliveredAt || b.createdAt);
-    if (bTime !== aTime) return bTime - aTime;
-    return String(b.id || '').localeCompare(String(a.id || ''));
-  });
-}
-function docsFromSource(source){
-  if (!source) return [];
-  if (Array.isArray(source)) return sortOrdersByRecency(source.map(extractDocData).filter(Boolean));
-  if (Array.isArray(source.docs)) return sortOrdersByRecency(source.docs.map(extractDocData).filter(Boolean));
-  return [];
-}
-async function getPedidosSorted(limit=200){
-  const snap = await db.collection('pedidos').limit(limit).get();
-  return docsFromSource(snap);
-}
-function watchPedidosSorted(onData, onError, limit=200){
-  return db.collection('pedidos').limit(limit).onSnapshot(
-    snap => onData(docsFromSource(snap)),
-    onError
-  );
-}
 function cleanPhone(value){ return String(value || '').replace(/[^\d]/g,''); }
 function statusClass(status='pendiente'){ return `status-pill status-${String(status).replace(/\s+/g,'_')}`; }
 function paymentStatusClass(status='pendiente'){ return `status-pill payment-${String(status).replace(/\s+/g,'_')}`; }
@@ -109,7 +68,6 @@ window.addEventListener('beforeinstallprompt', e => {
 });
 async function installApp(){ if (!installPrompt) return; await installPrompt.prompt(); await installPrompt.userChoice; installPrompt = null; const b = $('installBanner'); if (b) b.style.display = 'none'; }
 if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('service-worker.js').catch(console.error));
-if (typeof window.loadGoogleMapsApi === 'function') window.addEventListener('load', () => window.loadGoogleMapsApi().catch(err => console.warn('Google Maps opcional no cargó:', err)));
 async function saveUserProfile(user, role, extra={}){
   return db.collection('usuarios').doc(user.uid).set({
     email: user.email || '',
@@ -200,14 +158,6 @@ function haversineKm(lat1, lng1, lat2, lng2){
   return 2 * R * Math.asin(Math.sqrt(a));
 }
 async function fetchRouteMetrics(fromLat, fromLng, toLat, toLng){
-  if (typeof window.googleDistanceMatrixRoute === 'function') {
-    try {
-      const googleMetrics = await window.googleDistanceMatrixRoute(fromLat, fromLng, toLat, toLng);
-      if (googleMetrics?.distanceKm) return googleMetrics;
-    } catch (err) {
-      console.warn('Google Maps no estuvo disponible, se usará OSRM.', err);
-    }
-  }
   const url = `https://router.project-osrm.org/route/v1/driving/${fromLng},${fromLat};${toLng},${toLat}?overview=false&alternatives=false&steps=false`;
   const res = await fetch(url);
   if (!res.ok) throw new Error('No se pudo calcular la ruta.');
@@ -216,7 +166,7 @@ async function fetchRouteMetrics(fromLat, fromLng, toLat, toLng){
   if (!route) throw new Error('No hay ruta disponible.');
   const distanceKm = Number((route.distance / 1000).toFixed(2));
   const durationMin = Math.max(1, Math.round(route.duration / 60));
-  return {distanceKm, durationMin, provider:'osrm'};
+  return {distanceKm, durationMin};
 }
 async function getNearestApprovedCourier(customerLat, customerLng){
   const snap = await db.collection('repartidores').where('activo','==',true).get().catch(()=>null);
@@ -225,46 +175,10 @@ async function getNearestApprovedCourier(customerLat, customerLng){
   snap.forEach(doc => {
     const d = doc.data();
     if (!d?.lat || !d?.lng) return;
-    if (d.approvedForDeliveries === false) return;
     const km = haversineKm(customerLat, customerLng, Number(d.lat), Number(d.lng));
     if (!best || km < best.distanceKm) best = {id: doc.id, ...d, distanceKm: km};
   });
   return best;
-}
-async function getDistanceAndPriceSafe(orderValue=0){
-  const fallbackDistanceKm = 2.5;
-  const fallbackDurationMin = estimateEtaMinutes(fallbackDistanceKm, 'pendiente');
-  const fallback = {
-    lat: null,
-    lng: null,
-    distanceKm: fallbackDistanceKm,
-    durationMin: fallbackDurationMin,
-    deliveryPrice: estimateDeliveryPrice(fallbackDistanceKm),
-    total: estimateOrderTotal(orderValue, estimateDeliveryPrice(fallbackDistanceKm)),
-    usedFallback: true
-  };
-  try {
-    const pos = await getCurrentPositionPromise();
-    const lat = pos.coords.latitude;
-    const lng = pos.coords.longitude;
-    const nearestCourier = await getNearestApprovedCourier(lat, lng).catch(()=>null);
-    let distanceKm = fallbackDistanceKm;
-    let durationMin = fallbackDurationMin;
-    if (nearestCourier?.lat && nearestCourier?.lng){
-      try {
-        const metrics = await fetchRouteMetrics(Number(nearestCourier.lat), Number(nearestCourier.lng), lat, lng);
-        distanceKm = metrics.distanceKm;
-        durationMin = metrics.durationMin;
-      } catch(err){
-        distanceKm = Number(nearestCourier.distanceKm?.toFixed(2) || fallbackDistanceKm);
-        durationMin = estimateEtaMinutes(distanceKm, 'pendiente');
-      }
-    }
-    const deliveryPrice = estimateDeliveryPrice(distanceKm);
-    return { lat, lng, distanceKm, durationMin, deliveryPrice, total: estimateOrderTotal(orderValue, deliveryPrice), usedFallback:false };
-  } catch(err){
-    return fallback;
-  }
 }
 function estimateEtaMinutes(distanceKm, status='pendiente'){
   const base = status === 'en_camino' ? 4 : 8;
@@ -272,3 +186,65 @@ function estimateEtaMinutes(distanceKm, status='pendiente'){
   return base + travel;
 }
 
+
+
+function timestampToMillis(value){
+  try{
+    if (!value) return 0;
+    if (typeof value.toMillis === 'function') return value.toMillis();
+    if (typeof value.toDate === 'function') return value.toDate().getTime();
+    const t = new Date(value).getTime();
+    return Number.isFinite(t) ? t : 0;
+  }catch{return 0;}
+}
+function sortDocsByRecent(items=[]){
+  return [...items].sort((a,b)=>{
+    const da=a.data?a.data():a;
+    const db=b.data?b.data():b;
+    const av = timestampToMillis(da.ultimaActualizacion || da.createdAt || da.deliveredAt || da.updatedAt);
+    const bv = timestampToMillis(db.ultimaActualizacion || db.createdAt || db.deliveredAt || db.updatedAt);
+    return bv-av;
+  });
+}
+async function saveCourierMirror(uid, payload={}){
+  const clean = {...payload};
+  delete clean.isAdmin;
+  return db.collection('repartidores').doc(uid).set({
+    uid,
+    nombre: clean.fullName || clean.nombre || '',
+    email: clean.email || '',
+    telefono: clean.telefono || '',
+    provincia: clean.provincia || '',
+    ciudad: clean.ciudad || '',
+    cedula: clean.cedula || '',
+    vehiculo: clean.vehicleType || clean.vehiculo || '',
+    vehicleType: clean.vehicleType || clean.vehiculo || '',
+    placa: clean.placa || '',
+    licencia: clean.licenseNumber || clean.licencia || '',
+    licenseNumber: clean.licenseNumber || clean.licencia || '',
+    notes: clean.notes || '',
+    cedulaDocUrl: clean.cedulaDocUrl || '',
+    licenciaDocUrl: clean.licenciaDocUrl || '',
+    recordDocUrl: clean.recordDocUrl || '',
+    approvalStatus: clean.approvalStatus || 'pendiente',
+    estado: clean.approvalStatus === 'aprobado' ? 'aprobado' : (clean.approvalStatus || 'pendiente'),
+    aprobado: clean.approvalStatus === 'aprobado',
+    approvedForDeliveries: clean.approvedForDeliveries === true,
+    activo: clean.approvedForDeliveries === true,
+    createdAt: clean.createdAt || FieldValue.serverTimestamp(),
+    updatedAt: FieldValue.serverTimestamp()
+  }, {merge:true});
+}
+async function deleteOrdersByStatuses(statuses=[]){
+  if (!statuses.length) return 0;
+  const snap = await db.collection('pedidos').get();
+  let count = 0;
+  const batch = db.batch();
+  snap.forEach(doc=>{
+    const d = doc.data() || {};
+    const payment = d.estadoPago || 'pendiente';
+    if (statuses.includes(d.estado) || statuses.includes(payment)) { batch.delete(doc.ref); count++; }
+  });
+  if (count) await batch.commit();
+  return count;
+}

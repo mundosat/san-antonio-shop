@@ -34,7 +34,7 @@
         <div class="col-lg-7">
           <div class="hero-panel">
             <h1>Delivery estilo Uber, pero para cualquier mandado.</h1>
-            <p>Clientes, repartidores aprobados y control administrativo. Seguimiento en vivo, rutas con Google Maps opcional y cálculo automático del envío.</p>
+            <p>Clientes, repartidores aprobados y control administrativo. Seguimiento en vivo, rutas gratis y cálculo automático del envío.</p>
             <div>
               <span class="feature-chip">🚚 Ruta automática</span>
               <span class="feature-chip">📦 Seguimiento en vivo</span>
@@ -45,87 +45,29 @@
           </div>
         </div>
         <div class="col-lg-5">
-          <div class="section-card p-4 auth-pro-card">
-            <div class="auth-card-header mb-3">
-              <h3 class="fw-bold mb-1">Entrar o registrarte</h3>
-              <div class="small-muted">Crea la cuenta y, si eliges repartidor, deja la solicitud completa desde una sola pantalla.</div>
+          <div class="section-card p-4">
+            <h3 class="fw-bold mb-3">Entrar o registrarte</h3>
+            <input id="registerName" class="form-control mb-3" placeholder="Nombre completo" />
+            <input id="registerPhone" type="tel" class="form-control mb-3" placeholder="Teléfono" />
+            <input id="email" type="email" class="form-control mb-3" placeholder="Correo electrónico" />
+            <input id="password" type="password" class="form-control mb-3" placeholder="Contraseña" />
+            <select id="registerProvince" class="form-select mb-3"></select>
+            <input id="registerCity" class="form-control mb-3" placeholder="Ciudad" />
+            <select id="role" class="form-select mb-3" onchange="toggleRegisterRoleFields()">
+              <option value="cliente">Cliente</option>
+              <option value="repartidor">Repartidor</option>
+            </select>
+            <div id="registerCourierFields" class="grid-2 mb-3" style="display:none;">
+              <input id="registerCedula" class="form-control" placeholder="Cédula" />
+              <select id="registerVehicleType" class="form-select"><option value="moto">Moto</option><option value="carro">Carro</option><option value="bicicleta">Bicicleta</option></select>
+              <input id="registerPlaca" class="form-control" placeholder="Placa" />
+              <input id="registerLicenseNumber" class="form-control" placeholder="Número de licencia" />
+              <input id="registerCedulaDoc" type="file" class="form-control" accept="image/*,.pdf" />
+              <input id="registerLicenciaDoc" type="file" class="form-control" accept="image/*,.pdf" />
+              <input id="registerRecordDoc" type="file" class="form-control" accept="image/*,.pdf" />
+              <textarea id="registerNotes" class="form-control" rows="2" placeholder="Notas o experiencia"></textarea>
             </div>
-            <div class="grid-2 mb-3">
-              <div>
-                <label class="form-label">Nombre completo</label>
-                <input id="registerFullName" class="form-control" placeholder="Nombre y apellido" />
-              </div>
-              <div>
-                <label class="form-label">Teléfono</label>
-                <input id="registerPhone" type="tel" class="form-control" placeholder="09xxxxxxxx" />
-              </div>
-            </div>
-            <div class="grid-2 mb-3">
-              <div>
-                <label class="form-label">Correo electrónico</label>
-                <input id="email" type="email" class="form-control" placeholder="Correo electrónico" />
-              </div>
-              <div>
-                <label class="form-label">Contraseña</label>
-                <input id="password" type="password" class="form-control" placeholder="Contraseña" />
-              </div>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Tipo de cuenta</label>
-              <select id="role" class="form-select" onchange="toggleRegisterRoleFields()">
-                <option value="cliente">Cliente</option>
-                <option value="repartidor">Repartidor</option>
-              </select>
-            </div>
-
-            <div id="registerCourierFields" class="register-courier-fields" style="display:none;">
-              <div class="section-subtitle">Solicitud de repartidor</div>
-              <div class="small-muted mb-3">Completa estos datos ahora para que el administrador reciba la solicitud con todo listo.</div>
-              <div class="grid-2 mb-3">
-                <div>
-                  <label class="form-label">Cédula</label>
-                  <input id="registerCedula" class="form-control" placeholder="Cédula" />
-                </div>
-                <div>
-                  <label class="form-label">Vehículo</label>
-                  <select id="registerVehicleType" class="form-select"><option value="moto">Moto</option><option value="carro">Carro</option><option value="bicicleta">Bicicleta</option></select>
-                </div>
-                <div>
-                  <label class="form-label">Provincia</label>
-                  <select id="registerProvincia" class="form-select"></select>
-                </div>
-                <div>
-                  <label class="form-label">Ciudad</label>
-                  <input id="registerCiudad" class="form-control" placeholder="Ciudad" />
-                </div>
-                <div>
-                  <label class="form-label">Placa</label>
-                  <input id="registerPlaca" class="form-control" placeholder="Placa" />
-                </div>
-                <div>
-                  <label class="form-label">Número de licencia</label>
-                  <input id="registerLicenseNumber" class="form-control" placeholder="Número de licencia" />
-                </div>
-                <div>
-                  <label class="form-label">Documento de cédula</label>
-                  <input id="registerCedulaDoc" type="file" class="form-control" accept="image/*,.pdf" />
-                </div>
-                <div>
-                  <label class="form-label">Documento de licencia</label>
-                  <input id="registerLicenciaDoc" type="file" class="form-control" accept="image/*,.pdf" />
-                </div>
-                <div class="grid-span-2">
-                  <label class="form-label">Récord o documento adicional</label>
-                  <input id="registerRecordDoc" type="file" class="form-control" accept="image/*,.pdf" />
-                </div>
-                <div class="grid-span-2">
-                  <label class="form-label">Notas</label>
-                  <textarea id="registerNotes" class="form-control" rows="3" placeholder="Experiencia, horarios, zona de trabajo, observaciones"></textarea>
-                </div>
-              </div>
-            </div>
-
-            <div class="d-grid gap-2 auth-actions">
+            <div class="d-grid gap-2">
               <button class="btn btn-success" onclick="loginUser()">Iniciar sesión</button>
               <button class="btn btn-outline-success" onclick="registerUser()">Crear cuenta</button>
             </div>
@@ -289,8 +231,6 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
-  <script src="google-maps-config.js"></script>
-  <script src="maps-loader.js"></script>
   <script src="shared.js"></script>
   <script>
     let appUser = null, appProfile = null, customerMap, pedidosLayer, courierLayer, userMarker, pedidosUnsubscribe = null, cleanupTimer = null, userLocation = null, trackingUnsub = null, routeControl = null, orderFilter = 'todos', activeRatingOrder = null, lastNotified = new Set();
@@ -300,6 +240,10 @@
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom:19, attribution:'&copy; OpenStreetMap' }).addTo(customerMap);
       pedidosLayer = L.layerGroup().addTo(customerMap);
       courierLayer = L.layerGroup().addTo(customerMap);
+    }
+    function toggleRegisterRoleFields(){
+      const courier = $('role').value === 'repartidor';
+      $('registerCourierFields').style.display = courier ? 'grid' : 'none';
     }
     function getCurrentPositionPromise(){
       return new Promise((resolve, reject) => {
@@ -318,85 +262,42 @@
         if (showToast) showMessage('Ubicación actualizada.');
       } catch(err) { showMessage('No se pudo obtener la ubicación: ' + err.message, 'warning'); }
     }
-    function toggleRegisterRoleFields(){
-      const show = $('role').value === 'repartidor';
-      const box = $('registerCourierFields');
-      if (box) box.style.display = show ? 'block' : 'none';
-    }
-    function getCourierFormPayload(prefix=''){
-      const fromRegister = prefix === 'register';
-      const fullName = (fromRegister ? $('registerFullName') : $('fullName'))?.value.trim() || '';
-      const telefono = (fromRegister ? $('registerPhone') : $('telefonoRepartidor'))?.value.trim() || '';
-      const provincia = (fromRegister ? $('registerProvincia') : $('provinciaRepartidor'))?.value || '';
-      const ciudad = (fromRegister ? $('registerCiudad') : $('ciudadRepartidor'))?.value.trim() || '';
-      const vehicleType = (fromRegister ? $('registerVehicleType') : $('vehicleType'))?.value || 'moto';
-      return {
-        fullName,
-        telefono,
-        cedula: (fromRegister ? $('registerCedula') : $('cedula'))?.value.trim() || '',
-        provincia,
-        ciudad,
-        vehicleType,
-        placa: (fromRegister ? $('registerPlaca') : $('placa'))?.value.trim() || '',
-        licenseNumber: (fromRegister ? $('registerLicenseNumber') : $('licenseNumber'))?.value.trim() || '',
-        notes: (fromRegister ? $('registerNotes') : $('notes'))?.value.trim() || ''
-      };
-    }
-    async function uploadCourierDocsFor(prefix, uid){
-      const fromRegister = prefix === 'register';
-      return Promise.all([
-        uploadCourierFile((fromRegister ? $('registerCedulaDoc') : $('cedulaDoc'))?.files?.[0], uid, 'cedula'),
-        uploadCourierFile((fromRegister ? $('registerLicenciaDoc') : $('licenciaDoc'))?.files?.[0], uid, 'licencia'),
-        uploadCourierFile((fromRegister ? $('registerRecordDoc') : $('recordDoc'))?.files?.[0], uid, 'record')
-      ]);
-    }
-    async function saveCourierApplication(uid, email, payload, docs={}){
-      const merged = {
-        uid,
-        email: email || '',
-        role:'repartidor',
-        fullName: payload.fullName || '',
-        cedula: payload.cedula || '',
-        telefono: payload.telefono || '',
-        provincia: payload.provincia || '',
-        ciudad: payload.ciudad || '',
-        vehicleType: payload.vehicleType || 'moto',
-        placa: payload.placa || '',
-        licenseNumber: payload.licenseNumber || '',
-        notes: payload.notes || '',
-        approvalStatus:'pendiente',
-        approvedForDeliveries:false,
-        activo:false,
-        updatedAt:FieldValue.serverTimestamp(),
-        createdAt: FieldValue.serverTimestamp(),
-        ...docs
-      };
-      await db.collection('usuarios').doc(uid).set(merged, {merge:true});
-      await db.collection('repartidores').doc(uid).set(merged, {merge:true});
-    }
-
     async function registerUser(){
       const email = $('email').value.trim();
       const password = $('password').value.trim();
       const role = $('role').value;
-      const fullName = $('registerFullName').value.trim();
+      const fullName = $('registerName').value.trim();
       const telefono = $('registerPhone').value.trim();
-      if (!email || !password || !fullName) return showMessage('Completa nombre, email y contraseña.', 'warning');
+      const provincia = $('registerProvince').value;
+      const ciudad = $('registerCity').value.trim();
+      if (!email || !password || !fullName || !telefono) return showMessage('Completa nombre, teléfono, correo y contraseña.', 'warning');
+      if (role === 'repartidor' && (!$('registerCedula').value.trim() || !$('registerLicenseNumber').value.trim())) return showMessage('Completa cédula y licencia para registrar un repartidor.', 'warning');
       try {
         const cred = await auth.createUserWithEmailAndPassword(email, password);
+        let extra = {fullName, telefono, provincia, ciudad};
         if (role === 'repartidor') {
-          const payload = getCourierFormPayload('register');
-          if (!payload.cedula || !payload.telefono || !payload.provincia || !payload.ciudad || !payload.licenseNumber) {
-            throw new Error('Completa todos los datos del repartidor antes de crear la cuenta.');
-          }
-          const [cedulaDocUrl, licenciaDocUrl, recordDocUrl] = await uploadCourierDocsFor('register', cred.user.uid);
-          await saveUserProfile(cred.user, role, { fullName, telefono, provincia: payload.provincia, ciudad: payload.ciudad });
-          await saveCourierApplication(cred.user.uid, cred.user.email, {...payload, fullName, telefono}, { cedulaDocUrl, licenciaDocUrl, recordDocUrl });
-          showMessage('Cuenta creada. La solicitud de repartidor quedó enviada y lista para revisión.');
-        } else {
-          await saveUserProfile(cred.user, role, { fullName, telefono });
-          showMessage('Usuario registrado correctamente.');
+          const [cedulaDocUrl, licenciaDocUrl, recordDocUrl] = await Promise.all([
+            uploadCourierFile($('registerCedulaDoc').files[0], cred.user.uid, 'cedula'),
+            uploadCourierFile($('registerLicenciaDoc').files[0], cred.user.uid, 'licencia'),
+            uploadCourierFile($('registerRecordDoc').files[0], cred.user.uid, 'record')
+          ]);
+          extra = {
+            ...extra,
+            cedula: $('registerCedula').value.trim(),
+            vehicleType: $('registerVehicleType').value,
+            placa: $('registerPlaca').value.trim(),
+            licenseNumber: $('registerLicenseNumber').value.trim(),
+            notes: $('registerNotes').value.trim(),
+            cedulaDocUrl,
+            licenciaDocUrl,
+            recordDocUrl,
+            approvalStatus: 'pendiente',
+            approvedForDeliveries: false
+          };
         }
+        await saveUserProfile(cred.user, role, extra);
+        if (role === 'repartidor') await saveCourierMirror(cred.user.uid, {email: cred.user.email || '', createdAt: FieldValue.serverTimestamp(), ...extra});
+        showMessage(role === 'repartidor' ? 'Cuenta creada. La solicitud del repartidor quedó enviada para revisión.' : 'Usuario registrado correctamente.');
       } catch(err) { showMessage('Error al registrar: ' + err.message, 'danger'); }
     }
     async function loginUser(){
@@ -408,24 +309,45 @@
     async function submitCourierApplication(){
       if (!appUser) return showMessage('Debes iniciar sesión.', 'warning');
       try {
-        const payload = getCourierFormPayload();
-        if (!payload.fullName || !payload.cedula || !payload.telefono || !payload.provincia || !payload.ciudad || !payload.licenseNumber) {
-          return showMessage('Completa todos los datos obligatorios de la solicitud.', 'warning');
-        }
-        const [cedulaDocUrl, licenciaDocUrl, recordDocUrl] = await uploadCourierDocsFor('', appUser.uid);
-        await saveCourierApplication(appUser.uid, appUser.email, payload, {
-          ...(cedulaDocUrl ? {cedulaDocUrl} : {}),
-          ...(licenciaDocUrl ? {licenciaDocUrl} : {}),
-          ...(recordDocUrl ? {recordDocUrl} : {})
-        });
+        const [cedulaDocUrl, licenciaDocUrl, recordDocUrl] = await Promise.all([
+          uploadCourierFile($('cedulaDoc').files[0], appUser.uid, 'cedula'),
+          uploadCourierFile($('licenciaDoc').files[0], appUser.uid, 'licencia'),
+          uploadCourierFile($('recordDoc').files[0], appUser.uid, 'record')
+        ]);
+        const courierPayload = {
+          role:'repartidor',
+          fullName:$('fullName').value.trim(), cedula:$('cedula').value.trim(), telefono:$('telefonoRepartidor').value.trim(),
+          provincia:$('provinciaRepartidor').value, ciudad:$('ciudadRepartidor').value.trim(), vehicleType:$('vehicleType').value,
+          placa:$('placa').value.trim(), licenseNumber:$('licenseNumber').value.trim(), notes:$('notes').value.trim(),
+          cedulaDocUrl, licenciaDocUrl, recordDocUrl, approvalStatus:'pendiente', approvedForDeliveries:false,
+          updatedAt:FieldValue.serverTimestamp()
+        };
+        await db.collection('usuarios').doc(appUser.uid).set(courierPayload, {merge:true});
+        await saveCourierMirror(appUser.uid, {email: appUser.email || '', ...courierPayload});
         showMessage('Solicitud enviada. Ahora debes esperar aprobación del administrador.');
       } catch(err) { showMessage('No se pudieron subir los documentos: ' + err.message, 'danger'); }
     }
     function toggleTransferFields(){ $('paymentTransferFields').style.display = $('metodoPago').value === 'transferencia' ? 'grid' : 'none'; }
     
 async function getDistanceAndPrice(){
+  const pos = await getCurrentPositionPromise();
+  const [lat, lng] = [pos.coords.latitude, pos.coords.longitude];
+  let distanceKm = 2.5;
+  let durationMin = estimateEtaMinutes(distanceKm, 'pendiente');
+  const nearestCourier = await getNearestApprovedCourier(lat, lng).catch(()=>null);
+  if (nearestCourier?.lat && nearestCourier?.lng){
+    try {
+      const metrics = await fetchRouteMetrics(Number(nearestCourier.lat), Number(nearestCourier.lng), lat, lng);
+      distanceKm = metrics.distanceKm;
+      durationMin = metrics.durationMin;
+    } catch(err){
+      distanceKm = Number(nearestCourier.distanceKm?.toFixed(2) || 2.5);
+      durationMin = estimateEtaMinutes(distanceKm, 'pendiente');
+    }
+  }
+  const deliveryPrice = estimateDeliveryPrice(distanceKm);
   const orderValue = asNumber($('valorMandado').value, 0);
-  return getDistanceAndPriceSafe(orderValue);
+  return { lat, lng, distanceKm, durationMin, deliveryPrice, total: estimateOrderTotal(orderValue, deliveryPrice) };
 }
     async function previewPricing(){
       try {
@@ -466,7 +388,6 @@ async function getDistanceAndPrice(){
           texto,
           lat: pricing.lat,
           lng: pricing.lng,
-          ubicacionAproximada: pricing.usedFallback,
           estado: 'pendiente',
           metodoPago,
           estadoPago: metodoPago === 'transferencia' ? 'verificando' : 'pendiente',
@@ -489,7 +410,7 @@ async function getDistanceAndPrice(){
         $('bancoTransferencia').value = '';
         $('comprobantePago').value = '';
         await previewPricing();
-        showMessage(pricing.usedFallback ? 'Pedido enviado correctamente. Se usó una tarifa aproximada porque no se pudo obtener tu ubicación exacta.' : 'Pedido enviado correctamente.');
+        showMessage('Pedido enviado correctamente.');
       } catch(err) { showMessage('No se pudo guardar el pedido: ' + err.message, 'danger'); }
     }
     async function cancelOrder(id, status){
@@ -580,7 +501,7 @@ async function getDistanceAndPrice(){
     }
     function renderCustomerOrders(snapshot){
       const list = $('listaPedidos'); pedidosLayer.clearLayers();
-      const docs = docsFromSource(snapshot).filter(orderMatchesFilter);
+      const docs = snapshot.docs.map(doc => ({id:doc.id, ...doc.data()})).filter(orderMatchesFilter);
       if (!docs.length) { list.innerHTML = '<div class="empty-state">Todavía no tienes pedidos para este filtro.</div>'; renderRatingBox(null); clearTracking(); return; }
       let html = '', deliveredNeedingRating = null, activeTracked = null;
       docs.forEach(d => {
@@ -603,14 +524,15 @@ async function getDistanceAndPrice(){
     }
     function setOrderFilter(filter, el){ orderFilter = filter; document.querySelectorAll('.tabs-inline button').forEach(b => b.classList.remove('active')); if (el) el.classList.add('active'); refreshMyOrders(); }
     function refreshMyOrders(){ if (pedidosUnsubscribe) pedidosUnsubscribe(); setupOrdersListener(); }
-    function setupOrdersListener(){ pedidosUnsubscribe = db.collection('pedidos').where('clienteId','==',appUser.uid).limit(120).onSnapshot(snap => renderCustomerOrders(docsFromSource(snap)), err => showMessage(err.message,'danger')); }
+    function setupOrdersListener(){ pedidosUnsubscribe = db.collection('pedidos').where('clienteId','==',appUser.uid).onSnapshot(snapshot => renderCustomerOrders({docs: sortDocsByRecent(snapshot.docs)}), err => showMessage(err.message,'danger')); }
     async function startCustomerApp(user, profile){
       appUser = user; appProfile = profile || {role:'cliente'};
       fillProvinceSelect('clienteProvincia', profile?.provincia || '');
       fillProvinceSelect('provinciaRepartidor', profile?.provincia || '');
-      fillProvinceSelect('registerProvincia', profile?.provincia || '');
+      fillProvinceSelect('registerProvince', profile?.provincia || '');
       fillPaymentSelect('metodoPago');
       toggleTransferFields();
+      toggleRegisterRoleFields();
       $('metodoPago').addEventListener('change', toggleTransferFields);
       $('authSection').style.display = 'none'; $('appSection').style.display = 'block'; $('userEmail').textContent = user.email || '';
       initCustomerMap(); locateUser(); requestNotificationPermission(); previewPricing().catch(()=>{});
@@ -620,15 +542,16 @@ async function getDistanceAndPrice(){
         const status = profile?.approvalStatus || 'pendiente';
         $('repartidorBanner').innerHTML = status === 'aprobado' ? 'Tu perfil de repartidor ya está <b>aprobado</b>. Puedes abrir el <a href="repartidor.html">panel de repartidores</a>.' : `Tu perfil de repartidor está <b>${status}</b>. Puedes completar o corregir tus datos mientras esperas revisión.`;
       } else { $('courierApplicationCard').style.display = 'none'; $('repartidorBanner').innerHTML = ''; }
-      if (profile?.fullName) { $('fullName').value = profile.fullName; $('registerFullName').value = profile.fullName; }
-      if (profile?.cedula) { $('cedula').value = profile.cedula; $('registerCedula').value = profile.cedula; }
+      if (profile?.fullName) { $('fullName').value = profile.fullName; $('registerName').value = profile.fullName; }
+      if (profile?.cedula) $('cedula').value = profile.cedula;
       if (profile?.telefono) { $('telefonoRepartidor').value = profile.telefono; $('clienteTelefono').value = profile.telefono; $('registerPhone').value = profile.telefono; }
-      if (profile?.provincia) $('registerProvincia').value = profile.provincia;
-      if (profile?.ciudad) { $('ciudadRepartidor').value = profile.ciudad; $('clienteCiudad').value = profile.ciudad; $('registerCiudad').value = profile.ciudad; }
+      if (profile?.ciudad) { $('ciudadRepartidor').value = profile.ciudad; $('clienteCiudad').value = profile.ciudad; $('registerCity').value = profile.ciudad; }
       if (profile?.vehicleType) { $('vehicleType').value = profile.vehicleType; $('registerVehicleType').value = profile.vehicleType; }
       if (profile?.placa) { $('placa').value = profile.placa; $('registerPlaca').value = profile.placa; }
       if (profile?.licenseNumber) { $('licenseNumber').value = profile.licenseNumber; $('registerLicenseNumber').value = profile.licenseNumber; }
       if (profile?.notes) { $('notes').value = profile.notes; $('registerNotes').value = profile.notes; }
+      if (profile?.cedula) { $('cedula').value = profile.cedula; $('registerCedula').value = profile.cedula; }
+      if (profile?.provincia) $('registerProvince').value = profile.provincia;
       setupOrdersListener();
       if (cleanupTimer) clearInterval(cleanupTimer); cleanupTimer = scheduleCleanup();
     }
@@ -637,7 +560,6 @@ async function getDistanceAndPrice(){
       const profile = await getUserProfile(user.uid);
       startCustomerApp(user, profile || {role:'cliente'});
     });
-    window.addEventListener('load', () => { fillProvinceSelect('registerProvincia'); toggleRegisterRoleFields(); });
   </script>
 </body>
 </html>

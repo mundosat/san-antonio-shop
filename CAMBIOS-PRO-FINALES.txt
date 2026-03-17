@@ -1,0 +1,27 @@
+CAMBIOS PRO FINALES
+
+1. Registro inteligente:
+- ahora se puede registrar cliente o repartidor desde la misma pantalla
+- si elige repartidor, aparecen cédula, vehículo, placa, licencia y documentos
+- la solicitud se guarda en usuarios y en repartidores
+
+2. Solicitudes de repartidores:
+- el admin solo ve solicitudes pendientes
+- al aprobar, la solicitud desaparece de pendientes y queda activa
+- al rechazar, se elimina de usuarios y repartidores, y se archiva en repartidores_rechazados
+- botón para borrar rechazadas archivadas
+
+3. Pedidos y pagos:
+- botón para borrar pedidos cancelados o pagos rechazados
+- mejora para mostrar pedidos aunque no tengan createdAt consistente
+- orden local por ultimaActualizacion/createdAt
+
+4. Tiempo real:
+- admin escucha cambios en pedidos, usuarios repartidores y repartidores
+- mapa operativo y métricas se refrescan solos
+- panel repartidor ya no depende de orderBy(createdAt)
+
+5. Mejoras generales:
+- sincronización entre usuarios y repartidores
+- campos de nombre/teléfono/provincia/ciudad reutilizados
+- base preparada para interfaz profesional y flujo más limpio
