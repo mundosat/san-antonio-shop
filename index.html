@@ -102,21 +102,13 @@
                   <button class="input-action" type="button" onclick="togglePassword('regPassword', this)"><i class="bi bi-eye"></i></button>
                 </div>
                 <div class="grid-2 mb-3">
-                  <select id="registerProvince" class="form-select premium-select"></select>
+                  <select id="provincia" onchange="cargarCiudades()"></select>
                   <div class="premium-input city-input-wrap">
                     <i class="bi bi-buildings"></i>
-                    <input id="registerCity" class="form-control premium-control" placeholder="Ciudad" />
-                  </div>
-                </div>
-                <div class="premium-select-wrap mb-3">
-                  <i class="bi bi-person-badge"></i>
-                  <select id="role" class="form-select premium-select" onchange="toggleRegisterRoleFields()">
-                    <option value="cliente">Cliente</option>
-                    <option value="repartidor">Repartidor</option>
-                  </select>
-                </div>
-                <div id="registerCourierFields" class="grid-2 mb-3 courier-register-box" style="display:none;">
-                  <div class="premium-input"><i class="bi bi-credit-card"></i><input id="registerCedula" class="form-control premium-control" placeholder="Cédula" /></div>
+                    <input id="registerCity" class="form-control premium-control" placeholder="Ciudad
+<select id="ciudad">
+<option value="">Selecciona ciudad</option>
+</select></div>
                   <div class="premium-select-wrap"><i class="bi bi-truck"></i><select id="registerVehicleType" class="form-select premium-select"><option value="moto">Moto</option><option value="carro">Carro</option><option value="bicicleta">Bicicleta</option></select></div>
                   <div class="premium-input"><i class="bi bi-signpost"></i><input id="registerPlaca" class="form-control premium-control" placeholder="Placa" /></div>
                   <div class="premium-input"><i class="bi bi-patch-check"></i><input id="registerLicenseNumber" class="form-control premium-control" placeholder="Número de licencia" /></div>
@@ -173,46 +165,10 @@
                 <div>
                   <label class="form-label">
 <!-- PROVINCIA -->
-<select id="provincia" onchange="cargarCiudades()">
-<option value="">Selecciona provincia</option>
-<option value="Azuay">Azuay</option>
-<option value="Bolívar">Bolívar</option>
-<option value="Cañar">Cañar</option>
-<option value="Carchi">Carchi</option>
-<option value="Chimborazo">Chimborazo</option>
-<option value="Cotopaxi">Cotopaxi</option>
-<option value="El Oro">El Oro</option>
-<option value="Esmeraldas">Esmeraldas</option>
-<option value="Galápagos">Galápagos</option>
-<option value="Guayas">Guayas</option>
-<option value="Imbabura">Imbabura</option>
-<option value="Loja">Loja</option>
-<option value="Los Ríos">Los Ríos</option>
-<option value="Manabí">Manabí</option>
-<option value="Morona Santiago">Morona Santiago</option>
-<option value="Napo">Napo</option>
-<option value="Orellana">Orellana</option>
-<option value="Pastaza">Pastaza</option>
-<option value="Pichincha">Pichincha</option>
-<option value="Santa Elena">Santa Elena</option>
-<option value="Santo Domingo">Santo Domingo</option>
-<option value="Sucumbíos">Sucumbíos</option>
-<option value="Tungurahua">Tungurahua</option>
-<option value="Zamora Chinchipe">Zamora Chinchipe</option>
-</select>
-
-<!-- CIUDAD -->
+<select id="provincia" onchange="cargarCiudad
 <select id="ciudad">
 <option value="">Selecciona ciudad</option>
 </select>
-
-              </div>
-            </div>
-
-            <div class="grid-2 mb-3">
-              <div>
-                <label class="form-label">Referencia</label>
-                <input id="clienteReferencia" class="form-control" placeholder="Dirección, barrio, color de casa, punto de encuentro" />
               </div>
               <div class="grid-2">
                 <div>
@@ -265,9 +221,10 @@
               <input id="cedula" class="form-control" placeholder="Cédula" />
               <input id="telefonoRepartidor" class="form-control" placeholder="Teléfono" />
               <select id="provinciaRepartidor" class="form-select"></select>
-              <input id="ciudadRepartidor" class="form-control" placeholder="Ciudad" />
-              <select id="vehicleType" class="form-select"><option value="moto">Moto</option><option value="carro">Carro</option><option value="bicicleta">Bicicleta</option></select>
-              <input id="placa" class="form-control" placeholder="Placa" />
+              <input id="ciudadRepartidor" class="form-control" placeholder="Ciudad
+<select id="ciudad">
+<option value="">Selecciona ciudad</option>
+</select>
               <input id="licenseNumber" class="form-control" placeholder="Número de licencia" />
               <input id="cedulaDoc" type="file" class="form-control" accept="image/*,.pdf" />
               <input id="licenciaDoc" type="file" class="form-control" accept="image/*,.pdf" />
@@ -652,5 +609,26 @@ c.appendChild(op);
 }
 </script>
 
+
+<script>
+const ciudadesPorProvincia={
+"Azuay":["Cuenca","Gualaceo","Paute","Sigsig"],
+"Guayas":["Guayaquil","Daule"],
+"Pichincha":["Quito"]
+};
+function cargarCiudades(){
+let p=document.getElementById("provincia").value;
+let c=document.getElementById("ciudad");
+c.innerHTML="<option value=''>Selecciona ciudad</option>";
+if(ciudadesPorProvincia[p]){
+ciudadesPorProvincia[p].forEach(ci=>{
+let op=document.createElement("option");
+op.value=ci;
+op.textContent=ci;
+c.appendChild(op);
+});
+}
+}
+</script>
 </body>
 </html>
