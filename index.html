@@ -7,6 +7,7 @@
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="icons/icon-192.png" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
   <link rel="stylesheet" href="styles.css" />
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -29,49 +30,110 @@
 
     <div id="statusMessage" class="alert alert-success" style="display:none;"></div>
 
-    <section id="authSection" class="hero-card p-3 p-lg-4 mb-4">
-      <div class="row g-4 align-items-center">
-        <div class="col-lg-7">
-          <div class="hero-panel">
-            <h1>Delivery estilo Uber, pero para cualquier mandado.</h1>
-            <p>Clientes, repartidores aprobados y control administrativo. Seguimiento en vivo, rutas gratis y cálculo automático del envío.</p>
-            <div>
-              <span class="feature-chip">🚚 Ruta automática</span>
-              <span class="feature-chip">📦 Seguimiento en vivo</span>
-              <span class="feature-chip">⭐ Calificación de repartidores</span>
-              <span class="feature-chip">💰 Costo automático</span>
-              <span class="feature-chip">📱 App instalable</span>
+    <section id="authSection" class="hero-card auth-hero p-3 p-lg-4 mb-4">
+      <div class="row g-4 align-items-stretch">
+        <div class="col-lg-6">
+          <div class="hero-panel premium-hero h-100">
+            <div class="hero-kicker">San Antonio Shop Premium</div>
+            <h1>Inicia sesión rápido. Regístrate solo cuando lo necesites.</h1>
+            <p>Una experiencia más limpia, elegante y profesional para clientes y repartidores. Con seguimiento en vivo, rutas automáticas y paneles inteligentes.</p>
+            <div class="premium-feature-list">
+              <div class="premium-feature"><i class="bi bi-lightning-charge-fill"></i><span>Ingreso rápido y ordenado</span></div>
+              <div class="premium-feature"><i class="bi bi-geo-alt-fill"></i><span>Ubicación exacta en mapa</span></div>
+              <div class="premium-feature"><i class="bi bi-truck"></i><span>Flujo tipo Uber para repartidores</span></div>
+              <div class="premium-feature"><i class="bi bi-shield-check"></i><span>Solicitudes con aprobación segura</span></div>
             </div>
           </div>
         </div>
-        <div class="col-lg-5">
-          <div class="section-card p-4">
-            <h3 class="fw-bold mb-3">Entrar o registrarte</h3>
-            <input id="registerName" class="form-control mb-3" placeholder="Nombre completo" />
-            <input id="registerPhone" type="tel" class="form-control mb-3" placeholder="Teléfono" />
-            <input id="email" type="email" class="form-control mb-3" placeholder="Correo electrónico" />
-            <input id="password" type="password" class="form-control mb-3" placeholder="Contraseña" />
-            <select id="registerProvince" class="form-select mb-3"></select>
-            <input id="registerCity" class="form-control mb-3" placeholder="Ciudad" />
-            <select id="role" class="form-select mb-3" onchange="toggleRegisterRoleFields()">
-              <option value="cliente">Cliente</option>
-              <option value="repartidor">Repartidor</option>
-            </select>
-            <div id="registerCourierFields" class="grid-2 mb-3" style="display:none;">
-              <input id="registerCedula" class="form-control" placeholder="Cédula" />
-              <select id="registerVehicleType" class="form-select"><option value="moto">Moto</option><option value="carro">Carro</option><option value="bicicleta">Bicicleta</option></select>
-              <input id="registerPlaca" class="form-control" placeholder="Placa" />
-              <input id="registerLicenseNumber" class="form-control" placeholder="Número de licencia" />
-              <input id="registerCedulaDoc" type="file" class="form-control" accept="image/*,.pdf" />
-              <input id="registerLicenciaDoc" type="file" class="form-control" accept="image/*,.pdf" />
-              <input id="registerRecordDoc" type="file" class="form-control" accept="image/*,.pdf" />
-              <textarea id="registerNotes" class="form-control" rows="2" placeholder="Notas o experiencia"></textarea>
+        <div class="col-lg-6">
+          <div class="section-card p-0 auth-card-premium overflow-hidden">
+            <div class="auth-card-head">
+              <div>
+                <div class="auth-overline">Acceso seguro</div>
+                <h3 class="fw-bold mb-1">Entrar o crear cuenta</h3>
+                <div class="small-muted">Primero inicia sesión. El registro completo aparece solo cuando lo abras.</div>
+              </div>
+              <div class="auth-glow"></div>
             </div>
-            <div class="d-grid gap-2">
-              <button class="btn btn-success" onclick="loginUser()">Iniciar sesión</button>
-              <button class="btn btn-outline-success" onclick="registerUser()">Crear cuenta</button>
+            <div class="auth-tabs-wrap px-4 px-lg-4 pt-2">
+              <button id="tabLogin" class="auth-tab active" type="button" onclick="setAuthMode('login')"><i class="bi bi-box-arrow-in-right"></i> Iniciar sesión</button>
+              <button id="tabRegister" class="auth-tab" type="button" onclick="setAuthMode('register')"><i class="bi bi-person-plus"></i> Registrarse</button>
             </div>
-            <div class="small-muted mt-3">Los repartidores quedan en revisión hasta que tú los apruebes desde el panel admin.</div>
+            <div class="auth-forms-shell px-4 px-lg-4 pb-4">
+              <div id="loginBox" class="auth-pane active">
+                <div class="auth-pane-title">Bienvenido otra vez</div>
+                <div class="auth-pane-subtitle">Ingresa con tu correo y contraseña para continuar.</div>
+                <div class="premium-input mb-3">
+                  <i class="bi bi-envelope"></i>
+                  <input id="loginEmail" type="email" class="form-control premium-control" placeholder="Correo electrónico" />
+                </div>
+                <div class="premium-input mb-2">
+                  <i class="bi bi-lock"></i>
+                  <input id="loginPassword" type="password" class="form-control premium-control with-action" placeholder="Contraseña" />
+                  <button class="input-action" type="button" onclick="togglePassword('loginPassword', this)"><i class="bi bi-eye"></i></button>
+                </div>
+                <div class="auth-meta-row mb-3">
+                  <span class="small-muted"><i class="bi bi-stars"></i> Acceso rápido y limpio</span>
+                  <button class="auth-link-btn" type="button" onclick="setAuthMode('register')">Crear cuenta</button>
+                </div>
+                <div class="d-grid gap-2">
+                  <button class="btn btn-success btn-premium" onclick="loginUser()"><i class="bi bi-arrow-right-circle"></i> Iniciar sesión</button>
+                </div>
+              </div>
+
+              <div id="registroBox" class="auth-pane">
+                <div class="auth-pane-title">Crear cuenta nueva</div>
+                <div class="auth-pane-subtitle">Completa tus datos. Si eliges repartidor, aquí mismo aparece la solicitud completa.</div>
+                <div class="premium-input mb-3">
+                  <i class="bi bi-person"></i>
+                  <input id="registerName" class="form-control premium-control" placeholder="Nombre completo" />
+                </div>
+                <div class="premium-input mb-3">
+                  <i class="bi bi-telephone"></i>
+                  <input id="registerPhone" type="tel" class="form-control premium-control" placeholder="Teléfono" />
+                </div>
+                <div class="premium-input mb-3">
+                  <i class="bi bi-envelope"></i>
+                  <input id="regEmail" type="email" class="form-control premium-control" placeholder="Correo electrónico" />
+                </div>
+                <div class="premium-input mb-3">
+                  <i class="bi bi-lock"></i>
+                  <input id="regPassword" type="password" class="form-control premium-control with-action" placeholder="Contraseña" />
+                  <button class="input-action" type="button" onclick="togglePassword('regPassword', this)"><i class="bi bi-eye"></i></button>
+                </div>
+                <div class="grid-2 mb-3">
+                  <select id="registerProvince" class="form-select premium-select"></select>
+                  <div class="premium-input city-input-wrap">
+                    <i class="bi bi-buildings"></i>
+                    <input id="registerCity" class="form-control premium-control" placeholder="Ciudad" />
+                  </div>
+                </div>
+                <div class="premium-select-wrap mb-3">
+                  <i class="bi bi-person-badge"></i>
+                  <select id="role" class="form-select premium-select" onchange="toggleRegisterRoleFields()">
+                    <option value="cliente">Cliente</option>
+                    <option value="repartidor">Repartidor</option>
+                  </select>
+                </div>
+                <div id="registerCourierFields" class="grid-2 mb-3 courier-register-box" style="display:none;">
+                  <div class="premium-input"><i class="bi bi-credit-card"></i><input id="registerCedula" class="form-control premium-control" placeholder="Cédula" /></div>
+                  <div class="premium-select-wrap"><i class="bi bi-truck"></i><select id="registerVehicleType" class="form-select premium-select"><option value="moto">Moto</option><option value="carro">Carro</option><option value="bicicleta">Bicicleta</option></select></div>
+                  <div class="premium-input"><i class="bi bi-signpost"></i><input id="registerPlaca" class="form-control premium-control" placeholder="Placa" /></div>
+                  <div class="premium-input"><i class="bi bi-patch-check"></i><input id="registerLicenseNumber" class="form-control premium-control" placeholder="Número de licencia" /></div>
+                  <div class="file-card"><label class="file-card-label"><i class="bi bi-file-earmark-image"></i> Cédula / PDF</label><input id="registerCedulaDoc" type="file" class="form-control" accept="image/*,.pdf" /></div>
+                  <div class="file-card"><label class="file-card-label"><i class="bi bi-file-earmark-medical"></i> Licencia / PDF</label><input id="registerLicenciaDoc" type="file" class="form-control" accept="image/*,.pdf" /></div>
+                  <div class="file-card file-card-wide"><label class="file-card-label"><i class="bi bi-folder2-open"></i> Récord / PDF</label><input id="registerRecordDoc" type="file" class="form-control" accept="image/*,.pdf" /></div>
+                  <div class="file-card file-card-wide"><label class="file-card-label"><i class="bi bi-chat-square-text"></i> Notas o experiencia</label><textarea id="registerNotes" class="form-control" rows="2" placeholder="Cuéntanos tu experiencia o algo importante"></textarea></div>
+                </div>
+                <div class="auth-meta-row mb-3">
+                  <span class="small-muted"><i class="bi bi-shield-check"></i> Los repartidores quedan pendientes hasta aprobación del admin.</span>
+                  <button class="auth-link-btn" type="button" onclick="setAuthMode('login')">Volver al login</button>
+                </div>
+                <div class="d-grid gap-2">
+                  <button class="btn btn-success btn-premium" onclick="registerUser()"><i class="bi bi-person-check"></i> Crear cuenta</button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -87,7 +149,7 @@
                 <div class="small-muted">Sesión: <span id="userEmail"></span></div>
               </div>
               <div class="top-actions">
-                <button class="btn btn-soft" onclick="locateUser(true, true)">Usar mi ubicación</button>
+                <button class="btn btn-soft" onclick="locateUser(true)">Actualizar ubicación</button>
                 <a href="repartidor.html" class="btn btn-soft">Repartidores</a>
                 <a href="admin.html" class="btn btn-soft">Admin</a>
                 <button class="btn btn-outline-success" onclick="logoutUser()">Cerrar sesión</button>
@@ -206,27 +268,9 @@
         </div>
         <div class="col-lg-5">
           <div class="section-card p-3 p-lg-4 mb-4">
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
-              <div>
-                <h4 class="fw-bold mb-1">Mapa y seguimiento</h4>
-                <div class="small-muted">Toca el mapa o usa tu GPS para fijar el punto exacto de entrega.</div>
-              </div>
-              <div class="top-actions">
-                <button class="btn btn-soft btn-sm" onclick="locateUser(true, true)">📍 Usar mi ubicación</button>
-                <button class="btn btn-outline-success btn-sm" onclick="enableMapPickMode()">🖐 Elegir en mapa</button>
-              </div>
-            </div>
-            <div class="highlight-box mb-3">
-              <div class="small-grid">
-                <div><div class="small-muted">Punto de entrega</div><div class="fw-bold" id="deliveryPointText">Sin seleccionar</div></div>
-                <div><div class="small-muted">Lat / Lng</div><div class="fw-bold" id="deliveryCoords">—</div></div>
-                <div><div class="small-muted">Seguimiento</div><div class="fw-bold" id="trackingEstado">Esperando pedido</div></div>
-                <div><div class="small-muted">ETA repartidor</div><div class="fw-bold" id="etaCliente">—</div></div>
-                <div><div class="small-muted">Distancia repartidor</div><div class="fw-bold" id="distanciaRepartidor">—</div></div>
-              </div>
-            </div>
+            <h4 class="fw-bold mb-3">Mapa y seguimiento</h4>
             <div id="map" class="map-box"></div>
-            <p class="footer-note mt-3 mb-0">Si tu pedido ya fue tomado, aquí verás la ruta y al repartidor moviéndose en tiempo real. También puedes dejar el pin exacto de entrega.</p>
+            <p class="footer-note mt-3 mb-0">Si tu pedido ya fue tomado, aquí verás la ruta y al repartidor moviéndose en tiempo real.</p>
           </div>
           <div class="section-card p-3 p-lg-4">
             <h4 class="fw-bold mb-3">Calificar repartidor</h4>
@@ -251,44 +295,29 @@
   <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
   <script src="shared.js"></script>
   <script>
-    let appUser = null, appProfile = null, customerMap, pedidosLayer, courierLayer, userMarker, deliveryMarker, pickupGuideCircle, pedidosUnsubscribe = null, cleanupTimer = null, userLocation = null, deliveryPoint = null, trackingUnsub = null, routeControl = null, orderFilter = 'todos', activeRatingOrder = null, lastNotified = new Set(), mapPickMode = false;
+    let appUser = null, appProfile = null, customerMap, pedidosLayer, courierLayer, userMarker, pedidosUnsubscribe = null, cleanupTimer = null, userLocation = null, trackingUnsub = null, routeControl = null, orderFilter = 'todos', activeRatingOrder = null, lastNotified = new Set();
     function initCustomerMap(){
       if (customerMap) return;
       customerMap = L.map('map').setView([-2.9, -79.0], 13);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom:19, attribution:'&copy; OpenStreetMap' }).addTo(customerMap);
       pedidosLayer = L.layerGroup().addTo(customerMap);
       courierLayer = L.layerGroup().addTo(customerMap);
-      customerMap.on('click', e => {
-        if (!mapPickMode && deliveryPoint) return;
-        setDeliveryPoint(e.latlng.lat, e.latlng.lng, {center:false, toast:true, source:'mapa'});
-        mapPickMode = false;
-      });
     }
-    function updateDeliveryPointLabels(source='manual'){
-      $('deliveryPointText').textContent = source === 'gps' ? 'GPS detectado' : 'Pin manual';
-      $('deliveryCoords').textContent = deliveryPoint ? `${deliveryPoint.lat.toFixed(5)}, ${deliveryPoint.lng.toFixed(5)}` : '—';
+
+    function setAuthMode(mode){
+      const loginMode = mode !== 'register';
+      $('loginBox').classList.toggle('active', loginMode);
+      $('registroBox').classList.toggle('active', !loginMode);
+      $('tabLogin').classList.toggle('active', loginMode);
+      $('tabRegister').classList.toggle('active', !loginMode);
     }
-    function setDeliveryPoint(lat, lng, {center=true, toast=false, source='manual'} = {}){
-      initCustomerMap();
-      deliveryPoint = {lat:Number(lat), lng:Number(lng), source};
-      if (deliveryMarker) customerMap.removeLayer(deliveryMarker);
-      deliveryMarker = L.marker([deliveryPoint.lat, deliveryPoint.lng], {draggable:true}).addTo(customerMap).bindPopup('Punto exacto de entrega');
-      deliveryMarker.on('dragend', ev => {
-        const pos = ev.target.getLatLng();
-        deliveryPoint = {lat:Number(pos.lat), lng:Number(pos.lng), source:'pin'};
-        updateDeliveryPointLabels('manual');
-        previewPricing().catch(()=>{});
-      });
-      if (pickupGuideCircle) customerMap.removeLayer(pickupGuideCircle);
-      pickupGuideCircle = L.circle([deliveryPoint.lat, deliveryPoint.lng], {radius:120, color:'#1ca358', fillColor:'#1ca358', fillOpacity:0.08}).addTo(customerMap);
-      updateDeliveryPointLabels(source === 'gps' ? 'gps' : 'manual');
-      if (center) customerMap.setView([deliveryPoint.lat, deliveryPoint.lng], 16);
-      if (toast) showMessage(source === 'gps' ? 'Ubicación detectada y lista para el pedido.' : 'Punto de entrega actualizado en el mapa.');
-    }
-    function enableMapPickMode(){
-      mapPickMode = true;
-      initCustomerMap();
-      showMessage('Toca el mapa para fijar el punto exacto de entrega.', 'info');
+    function togglePassword(inputId, btn){
+      const input = $(inputId);
+      if (!input) return;
+      const isPassword = input.type === 'password';
+      input.type = isPassword ? 'text' : 'password';
+      const icon = btn?.querySelector('i');
+      if (icon) icon.className = isPassword ? 'bi bi-eye-slash' : 'bi bi-eye';
     }
     function toggleRegisterRoleFields(){
       const courier = $('role').value === 'repartidor';
@@ -300,7 +329,7 @@
         navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy:true, timeout:15000 });
       });
     }
-    async function locateUser(showToast=false, useAsDelivery=false){
+    async function locateUser(showToast=false){
       try {
         const pos = await getCurrentPositionPromise();
         userLocation = [pos.coords.latitude, pos.coords.longitude];
@@ -308,13 +337,12 @@
         if (userMarker) customerMap.removeLayer(userMarker);
         userMarker = L.marker(userLocation).addTo(customerMap).bindPopup('Tu ubicación');
         customerMap.setView(userLocation, 15);
-        if (useAsDelivery || !deliveryPoint) setDeliveryPoint(pos.coords.latitude, pos.coords.longitude, {center:true, toast:false, source:'gps'});
-        if (showToast) showMessage(useAsDelivery ? 'Ubicación detectada y puesta como entrega.' : 'Ubicación actualizada.');
+        if (showToast) showMessage('Ubicación actualizada.');
       } catch(err) { showMessage('No se pudo obtener la ubicación: ' + err.message, 'warning'); }
     }
     async function registerUser(){
-      const email = $('email').value.trim();
-      const password = $('password').value.trim();
+      const email = $('regEmail').value.trim();
+      const password = $('regPassword').value.trim();
       const role = $('role').value;
       const fullName = $('registerName').value.trim();
       const telefono = $('registerPhone').value.trim();
@@ -351,7 +379,7 @@
       } catch(err) { showMessage('Error al registrar: ' + err.message, 'danger'); }
     }
     async function loginUser(){
-      const email = $('email').value.trim(); const password = $('password').value.trim();
+      const email = $('loginEmail').value.trim(); const password = $('loginPassword').value.trim();
       if (!email || !password) return showMessage('Completa email y contraseña.', 'warning');
       try { await auth.signInWithEmailAndPassword(email, password); } catch(err) { showMessage('Error al iniciar sesión: ' + err.message, 'danger'); }
     }
@@ -380,11 +408,8 @@
     function toggleTransferFields(){ $('paymentTransferFields').style.display = $('metodoPago').value === 'transferencia' ? 'grid' : 'none'; }
     
 async function getDistanceAndPrice(){
-  if (!deliveryPoint) {
-    await locateUser(false, true);
-  }
-  if (!deliveryPoint) throw new Error('Debes marcar tu ubicación exacta en el mapa o usar tu GPS.');
-  const lat = Number(deliveryPoint.lat), lng = Number(deliveryPoint.lng);
+  const pos = await getCurrentPositionPromise();
+  const [lat, lng] = [pos.coords.latitude, pos.coords.longitude];
   let distanceKm = 2.5;
   let durationMin = estimateEtaMinutes(distanceKm, 'pendiente');
   const nearestCourier = await getNearestApprovedCourier(lat, lng).catch(()=>null);
@@ -400,7 +425,7 @@ async function getDistanceAndPrice(){
   }
   const deliveryPrice = estimateDeliveryPrice(distanceKm);
   const orderValue = asNumber($('valorMandado').value, 0);
-  return { lat, lng, distanceKm, durationMin, deliveryPrice, total: estimateOrderTotal(orderValue, deliveryPrice), locationSource: deliveryPoint.source || 'manual' };
+  return { lat, lng, distanceKm, durationMin, deliveryPrice, total: estimateOrderTotal(orderValue, deliveryPrice) };
 }
     async function previewPricing(){
       try {
@@ -426,7 +451,6 @@ async function getDistanceAndPrice(){
       const provincia = $('clienteProvincia').value, ciudad = $('clienteCiudad').value.trim();
       if (!appUser) return showMessage('Debes iniciar sesión.', 'warning');
       if (!texto || !telefono || !provincia || !ciudad) return showMessage('Completa pedido, teléfono, provincia y ciudad.', 'warning');
-      if (!deliveryPoint) return showMessage('Primero marca el punto exacto de entrega en el mapa o usa tu ubicación.', 'warning');
       try {
         const pricing = await getDistanceAndPrice();
         let comprobanteUrl = '';
@@ -442,8 +466,6 @@ async function getDistanceAndPrice(){
           texto,
           lat: pricing.lat,
           lng: pricing.lng,
-          locationSource: pricing.locationSource || 'manual',
-          deliveryCoordsText: `${pricing.lat.toFixed(5)}, ${pricing.lng.toFixed(5)}`, 
           estado: 'pendiente',
           metodoPago,
           estadoPago: metodoPago === 'transferencia' ? 'verificando' : 'pendiente',
@@ -588,10 +610,11 @@ async function getDistanceAndPrice(){
       fillProvinceSelect('registerProvince', profile?.provincia || '');
       fillPaymentSelect('metodoPago');
       toggleTransferFields();
+      setAuthMode('login');
       toggleRegisterRoleFields();
       $('metodoPago').addEventListener('change', toggleTransferFields);
       $('authSection').style.display = 'none'; $('appSection').style.display = 'block'; $('userEmail').textContent = user.email || '';
-      initCustomerMap(); locateUser(false, true); requestNotificationPermission(); previewPricing().catch(()=>{});
+      initCustomerMap(); locateUser(); requestNotificationPermission(); previewPricing().catch(()=>{});
       const role = profile?.role || 'cliente';
       if (role === 'repartidor') {
         $('courierApplicationCard').style.display = 'block';

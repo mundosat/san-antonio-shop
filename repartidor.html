@@ -62,7 +62,7 @@
   <script>
     const MAX_ORDER_RADIUS_KM = 10;
     const DEFAULT_CITY_CENTER = [-2.9006,-79.0045];
-    let appUser = null, appProfile = null, courierMap, pedidosLayer, repartidorLayer, routingControl, ordersUnsubscribe = null, couriersUnsubscribe = null, watchId = null, myMarker = null, radiusCircle = null, myLatLng = null, cleanupTimer = null, seenPendingIds = new Set(), selectedOrderId = null;
+    let appUser = null, appProfile = null, courierMap, pedidosLayer, repartidorLayer, routingControl, ordersUnsubscribe = null, couriersUnsubscribe = null, watchId = null, myMarker = null, myLatLng = null, cleanupTimer = null, seenPendingIds = new Set(), selectedOrderId = null;
 
     function normalizeStatus(value, fallback='pendiente'){ return String(value || fallback).toLowerCase().trim(); }
     function canCourierSeeOrder(d={}){
@@ -70,8 +70,7 @@
       const isMine = d.repartidorId === appUser?.uid;
       if (isMine) return !['cancelado','entregado'].includes(estado);
       if (estado !== 'pendiente') return false;
-      if (!myLatLng) return false;
-      if (!d.lat || !d.lng) return true;
+      if (!myLatLng || !d.lat || !d.lng) return false;
       return haversineKm(myLatLng[0], myLatLng[1], Number(d.lat), Number(d.lng)) <= MAX_ORDER_RADIUS_KM;
     }
     function initCourierMap(){
@@ -116,8 +115,6 @@
         initCourierMap();
         if (myMarker) courierMap.removeLayer(myMarker);
         myMarker = L.marker(myLatLng).addTo(courierMap).bindPopup('Tu ubicación');
-        if (radiusCircle) courierMap.removeLayer(radiusCircle);
-        radiusCircle = L.circle(myLatLng, {radius: MAX_ORDER_RADIUS_KM * 1000, color:'#1ca358', fillColor:'#1ca358', fillOpacity:0.06}).addTo(courierMap);
         await persistCourierLocation(pos.coords.latitude, pos.coords.longitude);
         renderNearbyHint();
       }, err => console.warn(err), {enableHighAccuracy:true, timeout:15000, maximumAge:4000});
@@ -239,10 +236,6 @@
             tiempoEstimadoMin: estimateEtaMinutes(distanceKm, 'aceptado')
           });
         });
-        selectedOrderId = id;
-        const fresh = await ref.get();
-        const data = fresh.data() || {};
-        if (data.lat && data.lng) drawRouteTo(Number(data.lat), Number(data.lng));
         showMessage('Pedido aceptado. Ya puedes seguir la ruta.');
       }catch(err){ showMessage('No se pudo aceptar: ' + err.message, 'danger'); }
     }
