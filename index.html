@@ -171,13 +171,41 @@
                   <input id="clienteTelefono" type="tel" class="form-control" placeholder="09xxxxxxxx" />
                 </div>
                 <div>
-                  <label class="form-label">Provincia</label>
-                  <select id="clienteProvincia" class="form-select"></select>
-                </div>
-                <div>
-                  <label class="form-label">Ciudad</label>
-                  <input id="clienteCiudad" class="form-control" placeholder="Ciudad" />
-                </div>
+                  <label class="form-label">
+<!-- PROVINCIA -->
+<select id="provincia" onchange="cargarCiudades()">
+<option value="">Selecciona provincia</option>
+<option value="Azuay">Azuay</option>
+<option value="Bolívar">Bolívar</option>
+<option value="Cañar">Cañar</option>
+<option value="Carchi">Carchi</option>
+<option value="Chimborazo">Chimborazo</option>
+<option value="Cotopaxi">Cotopaxi</option>
+<option value="El Oro">El Oro</option>
+<option value="Esmeraldas">Esmeraldas</option>
+<option value="Galápagos">Galápagos</option>
+<option value="Guayas">Guayas</option>
+<option value="Imbabura">Imbabura</option>
+<option value="Loja">Loja</option>
+<option value="Los Ríos">Los Ríos</option>
+<option value="Manabí">Manabí</option>
+<option value="Morona Santiago">Morona Santiago</option>
+<option value="Napo">Napo</option>
+<option value="Orellana">Orellana</option>
+<option value="Pastaza">Pastaza</option>
+<option value="Pichincha">Pichincha</option>
+<option value="Santa Elena">Santa Elena</option>
+<option value="Santo Domingo">Santo Domingo</option>
+<option value="Sucumbíos">Sucumbíos</option>
+<option value="Tungurahua">Tungurahua</option>
+<option value="Zamora Chinchipe">Zamora Chinchipe</option>
+</select>
+
+<!-- CIUDAD -->
+<select id="ciudad">
+<option value="">Selecciona ciudad</option>
+</select>
+
               </div>
             </div>
 
@@ -448,102 +476,41 @@ async function getDistanceAndPrice(){
     }
     async function createOrder(){
       const texto = $('pedidoTexto').value.trim(), telefono = $('clienteTelefono').value.trim(), referencia = $('clienteReferencia').value.trim();
-      const provincia = $('clienteProvincia').value, ciudad = $('clienteCiudad').value.trim();
-      if (!appUser) return showMessage('Debes iniciar sesión.', 'warning');
-      if (!texto || !telefono || !provincia || !ciudad) return showMessage('Completa pedido, teléfono, provincia y ciudad.', 'warning');
-      try {
-        const pricing = await getDistanceAndPrice();
-        let comprobanteUrl = '';
-        const metodoPago = $('metodoPago').value;
-        if (metodoPago === 'transferencia') comprobanteUrl = await uploadPaymentProof();
-        await db.collection('pedidos').add({
-          clienteId: appUser.uid,
-          clienteEmail: appUser.email || '',
-          clienteTelefono: telefono,
-          referencia: referencia || '',
-          provincia,
-          ciudad,
-          texto,
-          lat: pricing.lat,
-          lng: pricing.lng,
-          estado: 'pendiente',
-          metodoPago,
-          estadoPago: metodoPago === 'transferencia' ? 'verificando' : 'pendiente',
-          banco: $('bancoTransferencia').value.trim(),
-          referenciaPago: $('referenciaPago').value.trim(),
-          comprobanteUrl,
-          valorMandado: asNumber($('valorMandado').value, 0),
-          costoEnvio: pricing.deliveryPrice,
-          distanciaKm: pricing.distanceKm,
-          tiempoEstimadoMin: pricing.durationMin,
-          total: pricing.total,
-          courierRatingPending: false,
-          createdAt: FieldValue.serverTimestamp(),
-          ultimaActualizacion: FieldValue.serverTimestamp()
-        });
-        $('pedidoTexto').value = '';
-        $('valorMandado').value = '';
-        $('clienteReferencia').value = '';
-        $('referenciaPago').value = '';
-        $('bancoTransferencia').value = '';
-        $('comprobantePago').value = '';
-        await previewPricing();
-        showMessage('Pedido enviado correctamente.');
-      } catch(err) { showMessage('No se pudo guardar el pedido: ' + err.message, 'danger'); }
-    }
-    async function cancelOrder(id, status){
-      if (!['pendiente','aceptado'].includes(status)) return showMessage('Ese pedido ya no se puede cancelar desde aquí.', 'warning');
-      if (!confirm('¿Cancelar este pedido?')) return;
-      try {
-        await db.collection('pedidos').doc(id).update({ estado:'cancelado', canceladoPor:'cliente', ultimaActualizacion:FieldValue.serverTimestamp() });
-        showMessage('Pedido cancelado. Se eliminará automáticamente en unos minutos.');
-      } catch(err) { showMessage('No se pudo cancelar: ' + err.message, 'danger'); }
-    }
-    function drawRoute(order, courier){
-      if (!customerMap) initCustomerMap();
-      if (routeControl) customerMap.removeControl(routeControl);
-      if (!courier?.lat || !courier?.lng || !order?.lat || !order?.lng) return;
-      routeControl = L.Routing.control({
-        waypoints:[L.latLng(courier.lat, courier.lng), L.latLng(order.lat, order.lng)],
-        router:L.Routing.osrmv1({ serviceUrl:'https://router.project-osrm.org/route/v1' }),
-        show:false, addWaypoints:false, routeWhileDragging:false,
-        lineOptions:{styles:[{color:'#1ca358',opacity:0.9,weight:6}]},
-        createMarker:()=>null
-      }).addTo(customerMap);
-    }
-    function clearTracking(){ if (trackingUnsub) trackingUnsub(); trackingUnsub = null; courierLayer && courierLayer.clearLayers(); if (routeControl) { try{ customerMap.removeControl(routeControl); }catch{} routeControl = null; } $('etaCliente').textContent='—'; $('distanciaRepartidor').textContent='—'; $('trackingEstado').textContent='Esperando pedido'; }
-    function subscribeToCourier(order){
-      clearTracking();
-      if (!order?.repartidorId) return;
-      trackingUnsub = db.collection('repartidores').doc(order.repartidorId).onSnapshot(doc => {
-        courierLayer.clearLayers();
-        const c = doc.data();
-        if (!c?.lat || !c?.lng) return;
-        L.marker([c.lat, c.lng]).addTo(courierLayer).bindPopup('Tu repartidor');
-        const km = haversineKm(Number(c.lat), Number(c.lng), Number(order.lat), Number(order.lng));
-        $('distanciaRepartidor').textContent = km.toFixed(2) + ' km';
-        $('etaCliente').textContent = estimateEtaMinutes(km, order.estado) + ' min';
-        $('trackingEstado').textContent = order.estado === 'en_camino' ? 'Tu pedido va en camino' : 'Repartidor asignado';
-        drawRoute(order, c);
-      });
-    }
-    function focusOrder(lat, lng){ initCustomerMap(); customerMap.setView([lat,lng], 16); }
+      const provincia = $('cliente
+<!-- PROVINCIA -->
+<select id="provincia" onchange="cargarCiudades()">
+<option value="">Selecciona provincia</option>
+<option value="Azuay">Azuay</option>
+<option value="Bolívar">Bolívar</option>
+<option value="Cañar">Cañar</option>
+<option value="Carchi">Carchi</option>
+<option value="Chimborazo">Chimborazo</option>
+<option value="Cotopaxi">Cotopaxi</option>
+<option value="El Oro">El Oro</option>
+<option value="Esmeraldas">Esmeraldas</option>
+<option value="Galápagos">Galápagos</option>
+<option value="Guayas">Guayas</option>
+<option value="Imbabura">Imbabura</option>
+<option value="Loja">Loja</option>
+<option value="Los Ríos">Los Ríos</option>
+<option value="Manabí">Manabí</option>
+<option value="Morona Santiago">Morona Santiago</option>
+<option value="Napo">Napo</option>
+<option value="Orellana">Orellana</option>
+<option value="Pastaza">Pastaza</option>
+<option value="Pichincha">Pichincha</option>
+<option value="Santa Elena">Santa Elena</option>
+<option value="Santo Domingo">Santo Domingo</option>
+<option value="Sucumbíos">Sucumbíos</option>
+<option value="Tungurahua">Tungurahua</option>
+<option value="Zamora Chinchipe">Zamora Chinchipe</option>
+</select>
 
-    async function subscribeToCourierById(orderId){
-      const doc = await db.collection('pedidos').doc(orderId).get();
-      if (!doc.exists) return showMessage('Pedido no encontrado.', 'warning');
-      subscribeToCourier({id:doc.id, ...doc.data()});
-    }
-
-    function orderMatchesFilter(order){
-      if (orderFilter === 'todos') return true;
-      if (orderFilter === 'activos') return !['entregado','cancelado'].includes(order.estado);
-      if (orderFilter === 'historial') return ['entregado','cancelado'].includes(order.estado);
-      return true;
-    }
-    function renderRatingBox(order){
-      const box = $('ratingBox');
-      if (!order || order.estado !== 'entregado' || order.ratingSubmitted) { box.innerHTML = '<div class="empty-state">Cuando un pedido esté entregado, aquí podrás dejar tu calificación.</div>'; return; }
+<!-- CIUDAD -->
+<select id="ciudad">
+<option value="">Selecciona ciudad</option>
+</select>
+'; return; }
       activeRatingOrder = order;
       box.innerHTML = `
         <div class="highlight-box">
@@ -640,5 +607,50 @@ async function getDistanceAndPrice(){
       startCustomerApp(user, profile || {role:'cliente'});
     });
   </script>
+
+<script>
+const ciudadesPorProvincia = {
+"Azuay": ["Cuenca","Gualaceo","Paute","Sigsig","Chordeleg"],
+"Bolívar": ["Guaranda"],
+"Cañar": ["Azogues","La Troncal"],
+"Carchi": ["Tulcán"],
+"Chimborazo": ["Riobamba"],
+"Cotopaxi": ["Latacunga"],
+"El Oro": ["Machala"],
+"Esmeraldas": ["Esmeraldas"],
+"Galápagos": ["Puerto Ayora"],
+"Guayas": ["Guayaquil","Daule","Samborondón"],
+"Imbabura": ["Ibarra"],
+"Loja": ["Loja"],
+"Los Ríos": ["Babahoyo"],
+"Manabí": ["Portoviejo","Manta"],
+"Morona Santiago": ["Macas"],
+"Napo": ["Tena"],
+"Orellana": ["Coca"],
+"Pastaza": ["Puyo"],
+"Pichincha": ["Quito"],
+"Santa Elena": ["Santa Elena"],
+"Santo Domingo": ["Santo Domingo"],
+"Sucumbíos": ["Lago Agrio"],
+"Tungurahua": ["Ambato"],
+"Zamora Chinchipe": ["Zamora"]
+};
+
+function cargarCiudades(){
+let p=document.getElementById("provincia").value;
+let c=document.getElementById("ciudad");
+if(!c) return;
+c.innerHTML="<option value=''>Selecciona ciudad</option>";
+if(ciudadesPorProvincia[p]){
+ciudadesPorProvincia[p].forEach(ci=>{
+let op=document.createElement("option");
+op.value=ci;
+op.textContent=ci;
+c.appendChild(op);
+});
+}
+}
+</script>
+
 </body>
 </html>

@@ -302,5 +302,50 @@
     });
   </script>
 
+
+<script>
+const ciudadesPorProvincia = {
+"Azuay": ["Cuenca","Gualaceo","Paute","Sigsig","Chordeleg"],
+"Bolívar": ["Guaranda"],
+"Cañar": ["Azogues","La Troncal"],
+"Carchi": ["Tulcán"],
+"Chimborazo": ["Riobamba"],
+"Cotopaxi": ["Latacunga"],
+"El Oro": ["Machala"],
+"Esmeraldas": ["Esmeraldas"],
+"Galápagos": ["Puerto Ayora"],
+"Guayas": ["Guayaquil","Daule","Samborondón"],
+"Imbabura": ["Ibarra"],
+"Loja": ["Loja"],
+"Los Ríos": ["Babahoyo"],
+"Manabí": ["Portoviejo","Manta"],
+"Morona Santiago": ["Macas"],
+"Napo": ["Tena"],
+"Orellana": ["Coca"],
+"Pastaza": ["Puyo"],
+"Pichincha": ["Quito"],
+"Santa Elena": ["Santa Elena"],
+"Santo Domingo": ["Santo Domingo"],
+"Sucumbíos": ["Lago Agrio"],
+"Tungurahua": ["Ambato"],
+"Zamora Chinchipe": ["Zamora"]
+};
+
+function cargarCiudades(){
+let p=document.getElementById("provincia").value;
+let c=document.getElementById("ciudad");
+if(!c) return;
+c.innerHTML="<option value=''>Selecciona ciudad</option>";
+if(ciudadesPorProvincia[p]){
+ciudadesPorProvincia[p].forEach(ci=>{
+let op=document.createElement("option");
+op.value=ci;
+op.textContent=ci;
+c.appendChild(op);
+});
+}
+}
+</script>
+
 </body>
 </html>

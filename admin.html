@@ -212,5 +212,50 @@
 
     auth.onAuthStateChanged(async user => { if (!user) { $('loginGate').style.display='block'; $('adminSection').style.display='none'; return; } const ok = await ensureAdmin(user); if (!ok) { $('loginGate').style.display='none'; $('adminSection').style.display='block'; $('adminSection').innerHTML='<div class="section-card p-4"><div class="alert alert-danger mb-0">Tu usuario no tiene permisos de administrador. En Firestore, agrega <code>isAdmin: true</code> al documento de tu usuario en <code>usuarios/&lt;tu_uid&gt;</code>.</div></div>'; return; } $('loginGate').style.display='none'; $('adminSection').style.display='block'; loadStats(); loadOrders(); loadRequests(); loadRatings(); loadOpsMap(); if (adminOrdersUnsub) adminOrdersUnsub(); if (adminUsersUnsub) adminUsersUnsub(); if (adminCouriersUnsub) adminCouriersUnsub(); adminOrdersUnsub = db.collection('pedidos').onSnapshot(()=>{ loadStats(); loadOrders(); loadOpsMap(); }); adminUsersUnsub = db.collection('usuarios').where('role','==','repartidor').onSnapshot(()=>loadRequests()); adminCouriersUnsub = db.collection('repartidores').onSnapshot(()=>{ loadRequests(); loadOpsMap(); }); if (cleanupTimer) clearInterval(cleanupTimer); cleanupTimer = scheduleCleanup(); });
   </script>
+
+<script>
+const ciudadesPorProvincia = {
+"Azuay": ["Cuenca","Gualaceo","Paute","Sigsig","Chordeleg"],
+"Bolívar": ["Guaranda"],
+"Cañar": ["Azogues","La Troncal"],
+"Carchi": ["Tulcán"],
+"Chimborazo": ["Riobamba"],
+"Cotopaxi": ["Latacunga"],
+"El Oro": ["Machala"],
+"Esmeraldas": ["Esmeraldas"],
+"Galápagos": ["Puerto Ayora"],
+"Guayas": ["Guayaquil","Daule","Samborondón"],
+"Imbabura": ["Ibarra"],
+"Loja": ["Loja"],
+"Los Ríos": ["Babahoyo"],
+"Manabí": ["Portoviejo","Manta"],
+"Morona Santiago": ["Macas"],
+"Napo": ["Tena"],
+"Orellana": ["Coca"],
+"Pastaza": ["Puyo"],
+"Pichincha": ["Quito"],
+"Santa Elena": ["Santa Elena"],
+"Santo Domingo": ["Santo Domingo"],
+"Sucumbíos": ["Lago Agrio"],
+"Tungurahua": ["Ambato"],
+"Zamora Chinchipe": ["Zamora"]
+};
+
+function cargarCiudades(){
+let p=document.getElementById("provincia").value;
+let c=document.getElementById("ciudad");
+if(!c) return;
+c.innerHTML="<option value=''>Selecciona ciudad</option>";
+if(ciudadesPorProvincia[p]){
+ciudadesPorProvincia[p].forEach(ci=>{
+let op=document.createElement("option");
+op.value=ci;
+op.textContent=ci;
+c.appendChild(op);
+});
+}
+}
+</script>
+
 </body>
 </html>
